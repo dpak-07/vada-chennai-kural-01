@@ -41,10 +41,10 @@ export default function LatestIssuePreview({ issue }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
         {/* Cover Preview (LHS) */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.92, rotate: -2 }}
+          initial={{ opacity: 0, scale: 0.94, rotate: -2 }}
           whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
           viewport={VIEWPORT_ONCE}
-          transition={{ duration: 0.7, ease: EASE_OUT }}
+          transition={{ duration: 0.55, ease: EASE_OUT }}
           className="lg:col-span-5 flex justify-center"
         >
           <div className="relative aspect-[3/4] w-full max-w-[320px] rounded-xl overflow-hidden shadow-2xl border border-gray-100 group">
@@ -65,10 +65,10 @@ export default function LatestIssuePreview({ issue }) {
           initial="hidden"
           whileInView="visible"
           viewport={VIEWPORT_ONCE}
-          variants={staggerContainer(0.12, 0.15)}
+          variants={staggerContainer(0.1, 0.12)}
           className="lg:col-span-7 space-y-6"
         >
-          <motion.div variants={staggerItem({ y: 24, duration: 0.6 })} className="space-y-3">
+          <motion.div variants={staggerItem({ y: 22, duration: 0.5 })} className="space-y-3">
             <span className="bg-primary/10 text-primary font-sans font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider inline-block">
               {t.latestTag}
             </span>
@@ -86,7 +86,7 @@ export default function LatestIssuePreview({ issue }) {
           </motion.div>
 
           <motion.p
-            variants={staggerItem({ y: 22, duration: 0.6 })}
+            variants={staggerItem({ y: 20, duration: 0.5 })}
             className="font-sans text-sm sm:text-base text-charcoal/70 leading-relaxed font-light"
           >
             {displayDesc}
@@ -94,7 +94,7 @@ export default function LatestIssuePreview({ issue }) {
 
           {/* Issue Highlights */}
           {displayFeatures && displayFeatures.length > 0 && (
-            <motion.div variants={staggerItem({ y: 20, duration: 0.6 })} className="space-y-3 pt-2">
+            <motion.div variants={staggerItem({ y: 18, duration: 0.5 })} className="space-y-3 pt-2">
               <h4 className="font-serif text-sm font-bold text-charcoal uppercase tracking-wider border-b border-border-subtle pb-2">
                 {t.highlights}
               </h4>
@@ -111,7 +111,7 @@ export default function LatestIssuePreview({ issue }) {
 
           {/* Action Buttons */}
           <motion.div
-            variants={staggerItem({ y: 20, duration: 0.6 })}
+            variants={staggerItem({ y: 18, duration: 0.5 })}
             className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-border-subtle"
           >
             <Button

@@ -34,7 +34,7 @@ export default function Button({
     return (
       <Link href={href} className="inline-block">
         <motion.span
-          whileHover={{ scale: 1.03, y: -1, transition: { type: "spring", stiffness: 400, damping: 22 } }}
+          whileHover={{ scale: 1.02, y: -1, transition: { type: "spring", stiffness: 320, damping: 26 } }}
           whileTap={{ scale: 0.97 }}
           className={buttonClasses}
           {...props}
@@ -50,7 +50,7 @@ export default function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      whileHover={{ scale: 1.03, y: -1, transition: { type: "spring", stiffness: 400, damping: 22 } }}
+      whileHover={{ scale: 1.02, y: -1, transition: { type: "spring", stiffness: 320, damping: 26 } }}
       whileTap={{ scale: 0.97 }}
       className={buttonClasses}
       {...props}

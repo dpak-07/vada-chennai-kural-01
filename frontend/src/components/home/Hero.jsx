@@ -38,14 +38,14 @@ export default function Hero({ latestIssueId }) {
       <motion.div
         initial="hidden"
         animate="visible"
-        variants={staggerContainer(0.14, 0.15)}
+        variants={staggerContainer(0.12, 0.1)}
         className="relative w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 z-10"
       >
         <div className="max-w-3xl space-y-6">
           <div className="space-y-3">
             {/* Lead Tag */}
             <motion.span
-              variants={staggerItem({ y: 16, duration: 0.5 })}
+              variants={staggerItem({ y: 14, duration: 0.45 })}
               className="bg-secondary/25 border border-secondary text-secondary font-sans font-bold text-[10px] tracking-widest uppercase px-3 py-1 rounded inline-block"
             >
               {t.tag}
@@ -53,13 +53,13 @@ export default function Hero({ latestIssueId }) {
             
             {/* Article Headline */}
             <motion.h2
-              variants={staggerItem({ y: 46, duration: 0.85 })}
+              variants={staggerItem({ y: 40, duration: 0.6 })}
               className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-white leading-normal tracking-tight py-1.5"
             >
               {t.title}
             </motion.h2>
             <motion.p
-              variants={staggerItem({ y: 30, duration: 0.7 })}
+              variants={staggerItem({ y: 26, duration: 0.55 })}
               className="font-serif italic text-secondary-hover text-base sm:text-lg"
             >
               {t.italic}
@@ -67,7 +67,7 @@ export default function Hero({ latestIssueId }) {
           </div>
 
           <motion.p
-            variants={staggerItem({ y: 24, duration: 0.7 })}
+            variants={staggerItem({ y: 22, duration: 0.55 })}
             className="text-xs sm:text-sm text-gray-300 font-sans font-light leading-relaxed max-w-2xl"
           >
             {t.desc}
@@ -75,7 +75,7 @@ export default function Hero({ latestIssueId }) {
 
           {/* Action Buttons */}
           <motion.div
-            variants={staggerItem({ y: 20, duration: 0.6 })}
+            variants={staggerItem({ y: 18, duration: 0.5 })}
             className="flex flex-col sm:flex-row gap-4 pt-2"
           >
             <Button

@@ -34,10 +34,10 @@ export default function AboutPreview() {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
       {/* Narrative Preview (LHS) */}
       <motion.div
-        initial={{ opacity: 0, y: 32 }}
+        initial={{ opacity: 0, y: 28 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={VIEWPORT_ONCE}
-        transition={{ duration: 0.7, ease: EASE_OUT }}
+        transition={{ duration: 0.55, ease: EASE_OUT }}
         className="lg:col-span-7 space-y-6"
       >
         <h3 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal leading-normal py-1.5">
@@ -58,12 +58,12 @@ export default function AboutPreview() {
         initial="hidden"
         whileInView="visible"
         viewport={VIEWPORT_ONCE}
-        variants={staggerContainer(0.16, 0.1)}
+        variants={staggerContainer(0.14, 0.08)}
         className="lg:col-span-5 grid grid-cols-1 gap-6"
       >
         {/* Mission Card */}
         <motion.div
-          variants={staggerItem({ x: 28, duration: 0.65 })}
+          variants={staggerItem({ x: 24, duration: 0.55 })}
           className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow"
         >
           <motion.div
@@ -82,7 +82,7 @@ export default function AboutPreview() {
 
         {/* Vision Card */}
         <motion.div
-          variants={staggerItem({ x: 28, duration: 0.65 })}
+          variants={staggerItem({ x: 24, duration: 0.55 })}
           className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow"
         >
           <motion.div

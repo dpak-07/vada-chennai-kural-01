@@ -65,13 +65,13 @@ export default function AboutClient({ data }) {
   }[lang];
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 26 },
+    hidden: { opacity: 0, y: 24 },
     visible: (i) => ({
       opacity: 1,
       y: 0,
       transition: {
-        delay: i * 0.12,
-        duration: 0.65,
+        delay: i * 0.1,
+        duration: 0.55,
         ease: EASE_OUT,
       },
     }),
@@ -88,10 +88,10 @@ export default function AboutClient({ data }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-20">
       {/* Story details (LHS) */}
       <motion.div
-        initial={{ opacity: 0, y: 28 }}
+        initial={{ opacity: 0, y: 26 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={VIEWPORT_ONCE}
-        transition={{ duration: 0.7, ease: EASE_OUT }}
+        transition={{ duration: 0.55, ease: EASE_OUT }}
         className="lg:col-span-7 space-y-6"
       >
         <h3 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal leading-tight">
@@ -157,10 +157,10 @@ export default function AboutClient({ data }) {
           {t.timeline.map((item, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, x: -28 }}
+              initial={{ opacity: 0, x: -24 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={VIEWPORT_ONCE}
-              transition={{ duration: 0.65, delay: index * 0.1, ease: EASE_OUT }}
+              transition={{ duration: 0.55, delay: index * 0.08, ease: EASE_OUT }}
               className="relative"
             >
               {/* Timeline dot */}

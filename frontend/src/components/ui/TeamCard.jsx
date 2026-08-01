@@ -8,10 +8,10 @@ export default function TeamCard({ member, index = 0 }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={VIEWPORT_ONCE}
-      transition={{ duration: 0.65, delay: index * 0.1, ease: EASE_OUT }}
+      transition={{ duration: 0.55, delay: index * 0.08, ease: EASE_OUT }}
       whileHover={{ y: -6, transition: springLift(-6) }}
       className="bg-white rounded-xl overflow-hidden shadow-md border border-border-subtle flex flex-col items-center text-center p-6 w-full max-w-md mx-auto transition-shadow duration-300 hover:shadow-lg"
     >
