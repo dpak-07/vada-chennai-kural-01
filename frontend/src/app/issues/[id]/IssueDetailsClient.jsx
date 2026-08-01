@@ -89,7 +89,8 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
 
       try {
         const pdfjs = await getPdfJs();
-        const url = issue.pdfUrl && issue.pdfUrl.includes(".pdf") ? issue.pdfUrl : "/sample pdf.pdf";
+        const rawUrl = issue.pdfUrl && issue.pdfUrl.includes(".pdf") ? issue.pdfUrl : "/sample pdf.pdf";
+        const url = encodeURI(rawUrl);
         
         const loadingTask = pdfjs.getDocument(url);
         const pdf = await loadingTask.promise;

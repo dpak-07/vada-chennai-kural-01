@@ -39,27 +39,38 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const body = await request.json();
+    const contentType = request.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      return NextResponse.json({ error: "Expected application/json request body" }, { status: 415 });
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseErr) {
+      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    }
+
     const { issueId, name, comment } = body;
-    
     if (!issueId || !name || !comment) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
-    
+
     const comments = await readComments();
     const newComment = {
       id: Date.now().toString(),
       issueId,
       name,
       comment,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     comments.push(newComment);
     await writeComments(comments);
-    
+
     return NextResponse.json(newComment, { status: 201 });
   } catch (err) {
+    console.error("Comments POST error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

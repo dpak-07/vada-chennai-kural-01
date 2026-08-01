@@ -9,6 +9,7 @@ export default function CommentsSection({ issueId }) {
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const { lang } = useLanguage();
 
   const t = {
@@ -36,22 +37,41 @@ export default function CommentsSection({ issueId }) {
 
   // Fetch comments globally on mount
   useEffect(() => {
+    if (!issueId) {
+      setComments([]);
+      setLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
     const fetchComments = async () => {
       setLoading(true);
+      setError("");
+
       try {
-        const res = await fetch(`/api/comments?issueId=${issueId}`);
-        if (res.ok) {
-          const data = await res.json();
-          // Sort by newest first
-          setComments(data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
+        const url = new URL("/api/comments", window.location.origin);
+        url.searchParams.set("issueId", issueId);
+
+        const res = await fetch(url.toString(), { signal: controller.signal });
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Comments API failed: ${res.status} ${res.statusText} - ${errorText}`);
         }
+
+        const data = await res.json();
+        setComments(data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
       } catch (err) {
-        console.error("Failed to load comments:", err);
+        if (err.name !== "AbortError") {
+          console.error("Failed to load comments:", err);
+          setError("Failed to load comments. Please refresh the page.");
+        }
       } finally {
         setLoading(false);
       }
     };
+
     fetchComments();
+    return () => controller.abort();
   }, [issueId]);
 
   // Handle post submit
@@ -63,20 +83,26 @@ export default function CommentsSection({ issueId }) {
     }
 
     setSubmitting(true);
+    setError("");
+
     try {
       const res = await fetch("/api/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ issueId, name, comment: commentText })
+        body: JSON.stringify({ issueId, name, comment: commentText }),
       });
 
-      if (res.ok) {
-        const newComment = await res.json();
-        setComments(prev => [newComment, ...prev]);
-        setCommentText("");
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        throw new Error(errBody?.error || res.statusText || "Failed to save comment");
       }
+
+      const newComment = await res.json();
+      setComments((prev) => [newComment, ...prev]);
+      setCommentText("");
     } catch (err) {
       console.error("Failed to post comment:", err);
+      setError("Failed to post comment. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -103,11 +129,16 @@ export default function CommentsSection({ issueId }) {
 
   return (
     <div className="bg-white rounded-xl border border-border-subtle p-6 sm:p-8 space-y-8 shadow-sm">
-      <div className="flex items-center gap-2.5 pb-4 border-b border-border-subtle">
-        <MessageSquare className="w-5 h-5 text-primary" />
-        <h3 className="font-serif text-lg font-bold text-charcoal">
-          {t.commentsTitle} ({comments.length})
-        </h3>
+      <div className="flex flex-col gap-2 pb-4 border-b border-border-subtle">
+        <div className="flex items-center gap-2.5">
+          <MessageSquare className="w-5 h-5 text-primary" />
+          <h3 className="font-serif text-lg font-bold text-charcoal">
+            {t.commentsTitle} ({comments.length})
+          </h3>
+        </div>
+        {error && (
+          <p className="text-xs text-red-500 font-medium">{error}</p>
+        )}
       </div>
 
       {/* 1. Comments Submission Form */}
