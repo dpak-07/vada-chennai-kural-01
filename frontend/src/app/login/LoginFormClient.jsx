@@ -99,9 +99,11 @@ export default function LoginFormClient() {
         <div className="bg-white rounded-2xl shadow-xl border border-border-subtle p-8 space-y-8">
           {/* Brand Logo & Header */}
           <div className="text-center space-y-2">
-            <span className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-secondary font-serif text-xl font-bold shadow-md mx-auto">
-              வ
-            </span>
+            <img
+              src="/logo/vadachennai%20kural%20logo.jpg"
+              alt="Vadachennai Kural Logo"
+              className="w-12 h-12 rounded-full object-cover shadow-md mx-auto"
+            />
             <div className="space-y-1">
               <h2 className="font-serif text-2xl font-bold text-charcoal tracking-tight">
                 {t.heading}

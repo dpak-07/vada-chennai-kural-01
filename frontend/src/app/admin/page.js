@@ -391,9 +391,11 @@ export default function AdminDashboard() {
           {/* Header */}
           <div className="p-4 md:p-6 border-b border-white/10 flex items-center justify-between md:justify-start space-x-2">
             <div className="flex items-center space-x-2">
-              <span className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-secondary font-serif text-sm font-bold">
-                வ
-              </span>
+              <img
+                src="/logo/vadachennai%20kural%20logo.jpg"
+                alt="Vadachennai Kural Logo"
+                className="w-8 h-8 rounded-full object-cover shadow-sm"
+              />
               <div className="flex flex-col">
                 <span className="font-serif text-sm font-bold text-white tracking-wide">
                   {t.adminTitle}

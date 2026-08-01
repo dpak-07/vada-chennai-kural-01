@@ -1,4 +1,26 @@
 export const issueTranslations = {
+  "v1-i8": {
+    title: "Tailors of Washermanpet & Fashion History",
+    month: "August 2026",
+    description: "Detailing the rich heritage of the legendary tailors of Washermanpet, their design techniques, and the modern challenges they face in the competitive fashion industry.",
+    features: [
+      "The Story of Washermanpet Tailoring Streets",
+      "Interviews with Traditional Fashion Designers",
+      "Ancient Forts of Royapuram",
+      "History of Kabaddi Tournaments in North Chennai"
+    ]
+  },
+  "v1-i7": {
+    title: "Masala Flavors of Madras Cuisine",
+    month: "July 2026",
+    description: "A deep dive into the signature fish curries, biryanis, and street foods unique to North Chennai, and the histories of the traditional restaurants that serve them.",
+    features: [
+      "Famous Fish Markets of Royapuram",
+      "Background Stories of Local Eateries",
+      "Port Workers of Madras Harbour",
+      "Evolution of Therukoothu Street Art"
+    ]
+  },
   "v1-i6": {
     title: "Gana Singers & Music Heritage of North Chennai",
     month: "June 2026",

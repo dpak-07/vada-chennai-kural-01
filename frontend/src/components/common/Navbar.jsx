@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Calendar, BookOpen, Languages, ShieldCheck } from "lucide-react";
 import Button from "./Button";
 import { useLanguage } from "@/context/LanguageContext";
+import contactData from "@/data/contact.json";
 
 // Split into safe display units. For Tamil, use grapheme clusters so combining
 // vowel marks stay attached to their base consonant (avoids dotted-circle artifacts).
@@ -112,40 +113,107 @@ export default function Navbar() {
 
   return (
     <>
+      {/* 1. Thin top date/social strip (Newspaper sub-bar style) - Visible on ALL screens */}
+      <div className="bg-primary text-white py-1.5 border-b border-secondary/30">
+        <div className="w-full px-4 sm:px-8 lg:px-12 flex items-center justify-between text-[10px] font-sans font-bold tracking-wider uppercase">
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-secondary" /> {dateStr}</span>
+            <div className="flex sm:hidden items-center gap-2.5">
+              <a href={contactData.socialLinks.facebook} target="_blank" rel="noreferrer" className="text-white hover:text-secondary transition" aria-label="Facebook">
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" /></svg>
+              </a>
+              <a href={contactData.socialLinks.twitter} target="_blank" rel="noreferrer" className="text-white hover:text-secondary transition" aria-label="Twitter">
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+              </a>
+              <a href={contactData.socialLinks.instagram} target="_blank" rel="noreferrer" className="text-white hover:text-secondary transition" aria-label="Instagram">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
+              </a>
+              <a href={contactData.socialLinks.youtube} target="_blank" rel="noreferrer" className="text-white hover:text-secondary transition" aria-label="YouTube">
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C22 8.68 22 12 22 12s0 3.32-.42 4.814a2.44 2.44 0 0 1-1.768 1.768C18.32 19 12 19 12 19s-6.32 0-7.814-.418a2.44 2.44 0 0 1-1.768-1.768C2 15.32 2 12 2 12s0-3.32.418-4.814a2.44 2.44 0 0 1 1.768-1.768C5.68 5 12 5 12 5s6.32 0 7.812.418ZM10 15.5l5.5-3.5-5.5-3.5v7Z" clipRule="evenodd" /></svg>
+              </a>
+            </div>
+          </div>
+          <span className="hidden sm:inline font-serif italic text-secondary-hover tracking-normal font-semibold normal-case text-xs">{t.slogan}</span>
+          <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-secondary" /> {lang === "ta" ? "டிஜிட்டல் இதழ்" : "Digital Edition"}</span>
+        </div>
+      </div>
+
       {/* Top header (scrolls away naturally - no reflow animation) */}
       <div className="hidden md:block">
-        {/* 1. Thin top date strip (Newspaper sub-bar style) */}
-        <div className="bg-primary text-white py-1.5 border-b border-secondary/30">
-          <div className="w-full px-4 sm:px-8 lg:px-12 flex items-center justify-between text-[10px] font-sans font-bold tracking-wider uppercase">
-            <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-secondary" /> {dateStr}</span>
-            <span className="font-serif italic text-secondary-hover tracking-normal font-semibold normal-case text-xs">{t.slogan}</span>
-            <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-secondary" /> {t.digitalEdition}</span>
-          </div>
-        </div>
-
         {/* 2. GRAND VINTAGE MASTHEAD LOGO */}
         <div className="bg-white py-8 border-b-4 border-double border-primary/25">
           <div className="w-full px-4 sm:px-8 lg:px-12 flex items-center justify-between">
-            {/* Left Vignette Illustration (Newspaper stamp style) */}
-            <div className="w-16 h-16 rounded-full border-2 border-primary/20 flex flex-col items-center justify-center text-primary text-[8px] font-bold text-center shrink-0">
-              <span>ESTD</span>
-              <span className="font-serif text-sm font-black">2026</span>
+            {/* Left side: Social Media Links */}
+            <div className="flex items-center gap-2.5 w-1/4 min-w-[150px]">
+              <a
+                href={contactData.socialLinks.facebook}
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full border border-border-subtle hover:border-primary flex items-center justify-center transition-all duration-300 text-charcoal hover:bg-primary hover:text-white"
+                aria-label="Facebook"
+              >
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
+                </svg>
+              </a>
+              <a
+                href={contactData.socialLinks.twitter}
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full border border-border-subtle hover:border-primary flex items-center justify-center transition-all duration-300 text-charcoal hover:bg-primary hover:text-white"
+                aria-label="Twitter"
+              >
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </a>
+              <a
+                href={contactData.socialLinks.instagram}
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full border border-border-subtle hover:border-primary flex items-center justify-center transition-all duration-300 text-charcoal hover:bg-primary hover:text-white"
+                aria-label="Instagram"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                </svg>
+              </a>
+              <a
+                href={contactData.socialLinks.youtube}
+                target="_blank"
+                rel="noreferrer"
+                className="w-8 h-8 rounded-full border border-border-subtle hover:border-primary flex items-center justify-center transition-all duration-300 text-charcoal hover:bg-primary hover:text-white"
+                aria-label="YouTube"
+              >
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fillRule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C22 8.68 22 12 22 12s0 3.32-.42 4.814a2.44 2.44 0 0 1-1.768 1.768C18.32 19 12 19 12 19s-6.32 0-7.814-.418a2.44 2.44 0 0 1-1.768-1.768C2 15.32 2 12 2 12s0-3.32.418-4.814a2.44 2.44 0 0 1 1.768-1.768C5.68 5 12 5 12 5s6.32 0 7.812.418ZM10 15.5l5.5-3.5-5.5-3.5v7Z" clipRule="evenodd" />
+                </svg>
+              </a>
             </div>
 
-            {/* Giant Centered Masthead Title */}
-            <div className="text-center space-y-1">
-              <h1 className="font-serif text-5xl font-black text-primary tracking-tight">
-                {t.logoTitle}
-              </h1>
-              <p className="font-sans text-[9px] tracking-widest text-secondary font-bold uppercase">
-                {t.logoSub}
-              </p>
+            {/* Center: Main Brand Logo Crest & Text Title */}
+            <div className="flex items-center justify-center gap-4 flex-1">
+              <img
+                src="/logo/vadachennai%20kural%20logo.jpg"
+                alt="Vadachennai Kural Logo"
+                className="w-16 h-16 md:w-20 md:h-20 object-contain rounded-full shadow-sm bg-white border border-border-subtle shrink-0"
+              />
+              <div className="text-left space-y-1">
+                <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-black text-primary tracking-tight leading-none">
+                  {t.logoTitle}
+                </h1>
+                <p className="font-sans text-[8px] md:text-[9px] tracking-widest text-secondary font-bold uppercase">
+                  {t.logoSub}
+                </p>
+              </div>
             </div>
 
-            {/* Right Vignette Illustration */}
-            <div className="w-16 h-16 rounded-full border-2 border-primary/20 flex flex-col items-center justify-center text-primary text-[8px] font-bold text-center shrink-0">
-              <span>ONLINE</span>
-              <span className="font-serif text-sm font-black">EDITION</span>
+            {/* Right side: Localized Date & Slogan */}
+            <div className="hidden md:flex flex-col items-end text-right space-y-1 w-1/4 min-w-[150px] shrink-0">
+              <span className="font-sans text-[10px] font-bold text-primary tracking-wider uppercase">{dateStr}</span>
+              <span className="font-serif italic text-xs text-secondary-hover font-semibold">{t.slogan}</span>
             </div>
           </div>
         </div>
@@ -168,14 +236,14 @@ export default function Navbar() {
                 href="/" 
                 className="flex items-center space-x-2 group shrink-0"
               >
-                <motion.span
+                <motion.img
+                  src="/logo/vadachennai%20kural%20logo.jpg"
+                  alt="Vadachennai Kural Logo"
                   initial={false}
                   animate={{ opacity: logoVisible ? 1 : 0, x: logoVisible ? 0 : -12 }}
                   transition={{ duration: 0.15, ease: "easeOut", delay: 0.02 }}
-                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary flex items-center justify-center text-secondary font-serif text-sm sm:text-base font-bold shadow-sm shrink-0"
-                >
-                  வ
-                </motion.span>
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover shadow-sm shrink-0"
+                />
                 <div key={lang} className="flex flex-col min-w-0">
                   <span className="font-serif text-base sm:text-xl font-bold tracking-tight text-primary truncate">
                     {titleChars.map((ch, i) => (
@@ -244,10 +312,11 @@ export default function Navbar() {
 
             {/* Right Side actions */}
             <div className="flex items-center space-x-4 shrink-0">
+
               {/* Language Toggle Selector */}
               <button
                 onClick={toggleLanguage}
-                className="flex items-center gap-1 bg-canvas hover:bg-gray-100 border border-border-subtle hover:border-primary px-3 py-2 rounded-lg text-xs font-bold text-charcoal/80 transition cursor-pointer"
+                className="flex items-center gap-1 bg-canvas hover:bg-gray-100 border border-border-subtle hover:border-primary px-2.5 py-1.5 rounded-lg text-xs font-bold text-charcoal/80 transition cursor-pointer"
                 title="Switch Language / மொழியை மாற்றுக"
               >
                 <Languages className="w-4 h-4 text-primary shrink-0" />
@@ -294,9 +363,11 @@ export default function Navbar() {
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center space-x-2">
-                    <span className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-secondary font-serif text-sm font-bold">
-                      வ
-                    </span>
+                    <img
+                      src="/logo/vadachennai%20kural%20logo.jpg"
+                      alt="Vadachennai Kural Logo"
+                      className="w-8 h-8 rounded-full object-cover shadow-sm"
+                    />
                     <span className="font-serif text-lg font-bold text-primary">{t.logoTitle}</span>
                   </div>
                   <button
@@ -333,7 +404,57 @@ export default function Navbar() {
                 </nav>
               </div>
 
-              <div className="mt-8 border-t border-border-subtle pt-6 space-y-3">
+              <div className="mt-8 border-t border-border-subtle pt-6 space-y-4">
+                {/* Social media links row for Mobile */}
+                <div className="flex items-center justify-center gap-4 pb-2">
+                  <a
+                    href={contactData.socialLinks.facebook}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-9 h-9 rounded-full border border-border-subtle flex items-center justify-center text-charcoal hover:bg-primary hover:text-white transition-all duration-300 shadow-sm"
+                    aria-label="Facebook"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
+                    </svg>
+                  </a>
+                  <a
+                    href={contactData.socialLinks.twitter}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-9 h-9 rounded-full border border-border-subtle flex items-center justify-center text-charcoal hover:bg-primary hover:text-white transition-all duration-300 shadow-sm"
+                    aria-label="Twitter"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </a>
+                  <a
+                    href={contactData.socialLinks.instagram}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-9 h-9 rounded-full border border-border-subtle flex items-center justify-center text-charcoal hover:bg-primary hover:text-white transition-all duration-300 shadow-sm"
+                    aria-label="Instagram"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                    </svg>
+                  </a>
+                  <a
+                    href={contactData.socialLinks.youtube}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-9 h-9 rounded-full border border-border-subtle flex items-center justify-center text-charcoal hover:bg-primary hover:text-white transition-all duration-300 shadow-sm"
+                    aria-label="YouTube"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path fillRule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C22 8.68 22 12 22 12s0 3.32-.42 4.814a2.44 2.44 0 0 1-1.768 1.768C18.32 19 12 19 12 19s-6.32 0-7.814-.418a2.44 2.44 0 0 1-1.768-1.768C2 15.32 2 12 2 12s0-3.32.418-4.814a2.44 2.44 0 0 1 1.768-1.768C5.68 5 12 5 12 5s6.32 0 7.812.418ZM10 15.5l5.5-3.5-5.5-3.5v7Z" clipRule="evenodd" />
+                    </svg>
+                  </a>
+                </div>
+
                 <button
                   onClick={() => { toggleLanguage(); setIsOpen(false); }}
                   className="w-full flex items-center justify-center gap-2 bg-canvas hover:bg-gray-100 border border-border-subtle py-3 rounded-lg text-xs font-bold text-charcoal/80 cursor-pointer"

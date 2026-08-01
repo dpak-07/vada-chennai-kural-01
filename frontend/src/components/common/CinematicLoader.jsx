@@ -49,9 +49,6 @@ export default function CinematicLoader({ onComplete }) {
 
   if (!isMounted) return null;
 
-  const words = ["VADACHENNAI", "KURAL"];
-
-  // Column transition settings (No borders to prevent vertical lines)
   const columnVariants = (delay) => ({
     initial: { y: "0%" },
     exit: { 
@@ -65,9 +62,9 @@ export default function CinematicLoader({ onComplete }) {
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden pointer-events-none bg-canvas">
       
-      {/* 3 Staggered Sliding Columns (Borders removed to fix thin vertical lines) */}
+      {/* Staggered Sliding Columns for exit transition */}
       <div className="absolute inset-0 grid grid-cols-3 w-full h-full z-0">
         <motion.div 
           variants={columnVariants(0)}
@@ -76,45 +73,83 @@ export default function CinematicLoader({ onComplete }) {
           className="bg-canvas w-full h-full"
         />
         <motion.div 
-          variants={columnVariants(0.1)}
+          variants={columnVariants(0.08)}
           initial="initial"
           animate={isExiting ? "exit" : "initial"}
           className="bg-canvas w-full h-full"
         />
         <motion.div 
-          variants={columnVariants(0.2)}
+          variants={columnVariants(0.16)}
           initial="initial"
           animate={isExiting ? "exit" : "initial"}
           className="bg-canvas w-full h-full"
         />
       </div>
 
-      {/* Masked Text overlay in center */}
+      {/* Brand Logo & Spinner Masked Layout */}
       <div className="relative z-10 flex flex-col items-center justify-center px-6 text-center select-none">
-        <div className="overflow-hidden flex flex-col md:flex-row md:space-x-4 items-center">
-          {words.map((word, wordIndex) => (
-            <div key={wordIndex} className="overflow-hidden py-1">
-              <motion.span
-                initial={{ y: "100%" }}
-                animate={isExiting 
-                  ? { y: "-100%", opacity: 0, transition: { duration: 0.4, ease: "easeIn" } }
-                  : { y: "0%", transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 } }
-                }
-                className="inline-block font-serif text-3xl md:text-5xl lg:text-6xl text-charcoal font-light tracking-[0.2em] md:tracking-[0.3em] uppercase italic"
-              >
-                {word}
-              </motion.span>
-            </div>
-          ))}
+        
+        {/* Animated Brand Crest Container */}
+        <div className="relative flex items-center justify-center">
+          {/* Rotating dashed border ring */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, rotate: 0 }}
+            animate={isExiting 
+              ? { opacity: 0, scale: 0.8, rotate: 0, transition: { duration: 0.3 } }
+              : { opacity: 1, scale: [1, 1.04, 1], rotate: 360 }
+            }
+            transition={{
+              rotate: { duration: 15, repeat: Infinity, ease: "linear" },
+              scale: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+              opacity: { duration: 0.8, ease: "easeOut" }
+            }}
+            className="absolute w-[180px] h-[180px] md:w-[230px] md:h-[230px] rounded-full border border-dashed border-primary/30 z-0"
+            style={{ borderDasharray: "4 4" }}
+          />
+
+          {/* Actual brand logo crest */}
+          <motion.img
+            src="/logo/vadachennai%20kural%20logo.jpg"
+            alt="Vadachennai Kural Logo"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={isExiting
+              ? { scale: 0.8, opacity: 0, transition: { duration: 0.4, ease: "easeIn" } }
+              : { scale: [1, 1.06, 1], opacity: 1 }
+            }
+            transition={{
+              scale: isExiting 
+                ? { duration: 0.4, ease: "easeIn" } 
+                : { repeat: Infinity, duration: 3, ease: "easeInOut", delay: 0.1 },
+              opacity: { duration: 0.8, ease: "easeOut", delay: 0.1 }
+            }}
+            className="w-36 h-36 md:w-48 md:h-48 object-contain rounded-full shadow-lg bg-white border border-primary/10 z-10"
+          />
         </div>
 
-        {/* Small subtle visual indicator line expanding */}
-        <div className="overflow-hidden mt-4 h-[1px] w-20 relative">
+        {/* Text Fade-in */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={isExiting
+            ? { opacity: 0, y: -15, transition: { duration: 0.4 } }
+            : { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut", delay: 0.4 } }
+          }
+          className="mt-6 space-y-1"
+        >
+          <h2 className="font-serif text-2xl md:text-3xl font-black text-primary tracking-wide">
+            வடசென்னை குரல்
+          </h2>
+          <p className="font-sans text-[8px] md:text-[9px] tracking-widest text-secondary font-bold uppercase">
+            VADACHENNAI KURAL TAMIL DIGITAL MAGAZINE
+          </p>
+        </motion.div>
+
+        {/* Elegant loading progress indicator line */}
+        <div className="overflow-hidden mt-4 h-[1px] w-24 relative">
           <motion.div 
             initial={{ scaleX: 0 }}
             animate={isExiting 
               ? { opacity: 0 }
-              : { scaleX: 1, transition: { duration: 1, ease: "easeOut", delay: 0.3 } }
+              : { scaleX: 1, transition: { duration: 1.2, ease: "easeInOut", delay: 0.3 } }
             }
             className="absolute inset-0 bg-primary origin-center"
           />

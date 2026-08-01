@@ -169,6 +169,27 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleShareClick = (e, key) => {
+    if (navigator.share) {
+      e.preventDefault();
+      navigator.share({
+        title: `வடசென்னை குரல் - ${displayTitle}`,
+        text: `வடசென்னை குரல் - ${displayTitle}`,
+        url: rawShareUrl
+      }).catch((err) => console.log("Share failed:", err));
+      return;
+    }
+
+    if (key === "instagram") {
+      e.preventDefault();
+      navigator.clipboard.writeText(rawShareUrl);
+      alert(lang === "en"
+        ? "Instagram does not support direct links. The link has been copied to your clipboard. You can paste it into your Instagram post or story!"
+        : "இன்ஸ்டாகிராம் நேரடி இணைப்புகளை ஆதரிக்கவில்லை. இணைப்பு நகலெடுக்கப்பட்டது. உங்கள் பதிவு அல்லது ஸ்டோரியில் பகிரலாம்!"
+      );
+    }
+  };
+
   const shareUrl = encodeURIComponent(rawShareUrl);
   const shareText = encodeURIComponent(`வடசென்னை குரல் - ${displayTitle}`);
 
@@ -244,7 +265,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
   const step = isMobile ? 1 : 2;
   const maxLeft = isMobile ? totalPages : totalPages - 1;
 
-  const TURN_DURATION = 1.8; // seconds for a full slow, smooth turn
+  const TURN_DURATION = 0.6; // seconds for a fast, snappy, realistic page turn
 
   const completePageFlip = (dir) => {
     if (dir === "next") {
@@ -386,6 +407,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                   rel="noreferrer"
                   aria-label={`Share on ${s.label}`}
                   title={s.label}
+                  onClick={(e) => handleShareClick(e, s.key)}
                   className="w-10 h-10 flex items-center justify-center rounded-full transition duration-200 hover:scale-110 hover:shadow-md"
                   style={{ backgroundColor: `${s.color}1A`, color: s.color }}
                 >
@@ -500,6 +522,16 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                       <div className="absolute inset-0 rounded-md bg-[#0d0d0d] p-2 sm:p-3 shadow-inner">
                         {/* Page block */}
                         <div className="relative w-full h-full rounded-[3px] bg-[#f6f1e6] overflow-hidden shadow-[0_0_0_1px_rgba(0,0,0,0.3),0_10px_30px_rgba(0,0,0,0.5)]">
+                          {/* Realistic stacked pages page-border details underneath */}
+                          {isDesktop ? (
+                            <>
+                              <div className="absolute -right-1 top-0 bottom-0 w-1.5 bg-gradient-to-r from-white/90 via-[#f6f1e6] to-[#d8d3c5] border-r border-neutral-700/30 z-10 pointer-events-none" />
+                              <div className="absolute -left-1 top-0 bottom-0 w-1.5 bg-gradient-to-l from-white/90 via-[#f6f1e6] to-[#d8d3c5] border-l border-neutral-700/30 z-10 pointer-events-none" />
+                            </>
+                          ) : (
+                            <div className="absolute -right-1 top-0 bottom-0 w-1.5 bg-gradient-to-r from-white/90 via-[#f6f1e6] to-[#d8d3c5] border-r border-neutral-700/30 z-10 pointer-events-none" />
+                          )}
+
                           {/* Paper texture wash */}
                           <div
                             className="absolute inset-0 pointer-events-none"
@@ -508,12 +540,13 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                           {/* Binding / spine shadows */}
                           {isDesktop ? (
                             <>
-                              <div className="absolute top-0 bottom-0 left-0 w-6 bg-gradient-to-r from-black/25 via-black/5 to-transparent z-10 pointer-events-none" />
-                              <div className="absolute top-0 bottom-0 left-1/2 w-px bg-black/20 z-10 pointer-events-none" />
-                              <div className="absolute top-0 bottom-0 right-0 w-6 bg-gradient-to-l from-black/25 via-black/5 to-transparent z-10 pointer-events-none" />
+                              <div className="absolute top-0 bottom-0 left-0 w-6 bg-gradient-to-r from-black/20 via-black/3 to-transparent z-10 pointer-events-none" />
+                              <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-4 bg-gradient-to-r from-black/25 via-transparent to-black/25 z-10 pointer-events-none" />
+                              <div className="absolute top-0 bottom-0 left-1/2 w-px bg-black/25 z-10 pointer-events-none" />
+                              <div className="absolute top-0 bottom-0 right-0 w-6 bg-gradient-to-l from-black/20 via-black/3 to-transparent z-10 pointer-events-none" />
                             </>
                           ) : (
-                            <div className="absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-black/25 via-black/5 to-transparent z-10 pointer-events-none" />
+                            <div className="absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-black/20 via-black/4 to-transparent z-10 pointer-events-none" />
                           )}
 
                           {/* Page stack: two-page spread on desktop, single page on mobile */}

@@ -70,7 +70,7 @@ export default function Hero({ latestIssueId }) {
           word, then go dark one by one, looping forever. */}
       <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none z-0">
         <div
-          className="text-center font-serif font-black uppercase leading-none text-secondary"
+          className="text-center font-serif font-black uppercase leading-none text-secondary opacity-[0.07]"
           style={{
             fontSize: lang === "ta" ? "clamp(3.5rem, 13vw, 11rem)" : "clamp(2.6rem, 8.5vw, 7.5rem)",
             letterSpacing: lang === "ta" ? "0.14em" : "0.18em",

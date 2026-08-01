@@ -76,6 +76,7 @@ export default async function RootLayout({ children }) {
     <html
       lang={initialLang}
       className={`${cormorantGaramond.variable} ${plusJakartaSans.variable} ${notoSansTamil.variable} ${notoSerifTamil.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-canvas text-charcoal font-sans selection:bg-primary selection:text-white">
         <LanguageProvider initialLang={initialLang} hasLangCookie={hasLangCookie}>

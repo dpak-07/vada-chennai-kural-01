@@ -13,8 +13,8 @@ import issuesData from "@/data/issues.json";
 
 export default function Home() {
   const { lang } = useLanguage();
-  const latestIssue = issuesData.find((issue) => issue.isLatest) || issuesData[0];
-  const recentIssues = issuesData.filter((issue) => issue.id !== latestIssue.id);
+  const latestIssues = issuesData.slice(0, 5);
+  const recentIssues = issuesData.slice(5);
 
   const t = {
     ta: {
@@ -69,7 +69,7 @@ export default function Home() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <Hero latestIssueId={latestIssue.id} />
+        <Hero latestIssueId={latestIssues[0]?.id} />
 
         {/* Thought of the Day Ribbon */}
         <section className="bg-secondary/10 py-4 border-b border-secondary/20">
@@ -93,7 +93,7 @@ export default function Home() {
               title={t.latestHeading}
               subtitle={t.latestSub}
             />
-            <LatestIssuePreview issue={latestIssue} />
+            <LatestIssuePreview issues={latestIssues} />
           </div>
         </section>
 

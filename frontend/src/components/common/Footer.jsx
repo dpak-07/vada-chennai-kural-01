@@ -52,9 +52,11 @@ export default function Footer() {
           {/* Brand & About */}
           <div className="md:col-span-1 space-y-4">
             <Link href="/" className="flex items-center space-x-2 group">
-              <span className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-secondary font-serif text-base font-bold shadow-sm transition-transform duration-300 group-hover:scale-105">
-                வ
-              </span>
+              <img
+                src="/logo/vadachennai%20kural%20logo.jpg"
+                alt="Vadachennai Kural Logo"
+                className="w-9 h-9 rounded-full object-cover shadow-sm transition-transform duration-300 group-hover:scale-105"
+              />
               <div className="flex flex-col">
                 <span className="font-serif text-lg font-bold tracking-tight text-white">
                   {t.brandTitle}
