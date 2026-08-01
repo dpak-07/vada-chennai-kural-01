@@ -141,3 +141,31 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# --- ESSENTIAL ADDITIONS ---
+# Dynamic Local Database
+comments.json
+
+# Monorepo build and package caches
+**/node_modules/
+**/.next/
+**/out/
+**/.cache/
+
+# Local Environment Overrides
+*.local
+
+# IDE/Editors Configurations
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS metadata files
+.DS_Store
+Thumbs.db
+desktop.ini
+
