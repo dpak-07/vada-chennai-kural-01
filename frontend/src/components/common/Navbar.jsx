@@ -14,16 +14,19 @@ export default function Navbar() {
   const pathname = usePathname();
   const { lang, toggleLanguage } = useLanguage();
 
-  // Detect scroll state
+  // Detect scroll state (rAF-throttled with hysteresis to avoid threshold flutter)
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      if (window.scrollY > 40) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        const y = window.scrollY;
+        setScrolled(prev => (y > 60 ? true : y < 30 ? false : prev));
+        ticking = false;
+      });
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -82,12 +85,8 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Smoothly collapsing top header on scroll */}
-      <div 
-        className={`transition-all duration-500 ease-in-out overflow-hidden hidden md:block ${
-          scrolled ? "max-h-0 opacity-0 pointer-events-none" : "max-h-[300px] opacity-100"
-        }`}
-      >
+      {/* Top header (scrolls away naturally - no reflow animation) */}
+      <div className="hidden md:block">
         {/* 1. Thin top date strip (Newspaper sub-bar style) */}
         <div className="bg-primary text-white py-1.5 border-b border-secondary/30">
           <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between text-[10px] font-sans font-bold tracking-wider uppercase">
@@ -127,10 +126,10 @@ export default function Navbar() {
 
       {/* 3. Navigation Bar (Sticks cleanly) */}
       <header
-        className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        className={`sticky top-0 z-50 w-full py-4 transition-[background-color,box-shadow,border-color] duration-300 ${
           scrolled
-            ? "bg-white shadow-md py-3.5 border-b border-primary/20"
-            : "bg-white py-4 border-b border-border-subtle"
+            ? "bg-white shadow-md border-b border-primary/20"
+            : "bg-white border-b border-border-subtle"
         }`}
       >
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">

@@ -555,8 +555,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                           <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-8 bg-gradient-to-r from-black/30 via-transparent to-black/30 z-20 pointer-events-none" />
 
                           {/* LAYER 1: STATIC LEFT UNDERLAY PAGE */}
-                          <div className="absolute left-0 top-0 bottom-0 w-1/2 bg-white rounded-l-lg border-r border-black/25 overflow-hidden shadow-inner"
-                            style={{ transform: "translateZ(0)", willChange: "transform" }}>
+                          <div className="absolute left-0 top-0 bottom-0 w-1/2 bg-white rounded-l-lg border-r border-black/25 overflow-hidden shadow-inner">
                             {getPageUrl(isFlipping === "prev" ? flipPage - 2 : flipPage) ? (
                               <img src={getPageUrl(isFlipping === "prev" ? flipPage - 2 : flipPage)} className="w-full h-full object-contain" alt="" />
                             ) : (
@@ -569,8 +568,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                           </div>
 
                           {/* LAYER 2: STATIC RIGHT UNDERLAY PAGE */}
-                          <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-white rounded-r-lg border-l border-black/25 overflow-hidden shadow-inner"
-                            style={{ transform: "translateZ(0)", willChange: "transform" }}>
+                          <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-white rounded-r-lg border-l border-black/25 overflow-hidden shadow-inner">
                             {getPageUrl(isFlipping === "next" ? flipPage + 3 : flipPage + 1) ? (
                               <img src={getPageUrl(isFlipping === "next" ? flipPage + 3 : flipPage + 1)} className="w-full h-full object-contain" alt="" />
                             ) : (
