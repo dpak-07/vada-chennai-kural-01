@@ -1,6 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { EASE_OUT } from "@/lib/motion";
 
 export default function Button({
   children,
@@ -34,8 +35,8 @@ export default function Button({
     return (
       <Link href={href} className="inline-block">
         <motion.span
-          whileHover={{ scale: 1.02, y: -1, transition: { type: "spring", stiffness: 320, damping: 26 } }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: 1.02, y: -1, transition: { duration: 0.2, ease: EASE_OUT } }}
+          whileTap={{ scale: 0.96, transition: { duration: 0.1, ease: EASE_OUT } }}
           className={buttonClasses}
           {...props}
         >
@@ -50,8 +51,8 @@ export default function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      whileHover={{ scale: 1.02, y: -1, transition: { type: "spring", stiffness: 320, damping: 26 } }}
-      whileTap={{ scale: 0.97 }}
+      whileHover={{ scale: 1.02, y: -1, transition: { duration: 0.2, ease: EASE_OUT } }}
+      whileTap={{ scale: 0.96, transition: { duration: 0.1, ease: EASE_OUT } }}
       className={buttonClasses}
       {...props}
     >

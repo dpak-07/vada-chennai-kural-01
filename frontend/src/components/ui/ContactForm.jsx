@@ -195,7 +195,9 @@ export default function ContactForm() {
             disabled={status === "sending"}
           >
             {status === "sending" ? (
-              t.sending
+              <span className="flex items-center gap-2">
+                <Send className="w-4 h-4 animate-spin" /> {t.sending}
+              </span>
             ) : (
               <span className="flex items-center gap-2">
                 {t.sendBtn} <Send className="w-4 h-4" />
