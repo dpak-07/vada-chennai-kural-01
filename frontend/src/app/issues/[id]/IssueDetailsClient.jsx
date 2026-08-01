@@ -23,6 +23,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
   const [flipPage, setFlipPage] = useState(1); // Active left page (desktop) or active single page (mobile)
   const [zoom, setZoom] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [pageDirection, setPageDirection] = useState("next");
   
   const [pdfDoc, setPdfDoc] = useState(null);
   const [pageImages, setPageImages] = useState([]); // Pre-rendered Blob URLs for pages
@@ -58,6 +59,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
   // Reset page counter if mobile view toggles
   useEffect(() => {
     setFlipPage(1);
+    setZoom((prev) => (prev === 1 ? 1.2 : prev));
   }, [isMobile]);
 
   // Dynamically load PDF.js and pre-render PDF pages to high-performance Blob URLs
@@ -243,10 +245,11 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
 
   const handleNextPage = () => {
     if (isFlipping || loadingPdf) return;
+    setPageDirection("next");
     if (isMobile) {
       if (flipPage < totalPages) {
         setIsFlipping("next");
-        setFlipPage(prev => prev + 1);
+        setFlipPage((prev) => prev + 1);
         setTimeout(() => setIsFlipping(null), 220);
       }
     } else {
@@ -258,10 +261,11 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
 
   const handlePrevPage = () => {
     if (isFlipping || loadingPdf) return;
+    setPageDirection("prev");
     if (isMobile) {
       if (flipPage > 1) {
         setIsFlipping("prev");
-        setFlipPage(prev => prev - 1);
+        setFlipPage((prev) => prev - 1);
         setTimeout(() => setIsFlipping(null), 220);
       }
     } else {
@@ -522,7 +526,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                     /* The 3D Book Component wrapper */
                     <div 
                       className={`relative flex items-center justify-center w-full transition-transform duration-300 ${
-                        isMobile ? "max-w-[280px]" : "max-w-2xl bg-black/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] border border-white/5"
+                        isMobile ? "max-w-[min(100vw-1.5rem,560px)]" : "max-w-2xl bg-black/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] border border-white/5"
                       }`}
                       style={{ 
                         transform: `scale(${zoom}) translateZ(0)`,
@@ -533,20 +537,37 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                     >
                       {isMobile ? (
                         /* Mobile View: Render active single page directly to local canvas */
-                        <div className="relative w-full h-full bg-white rounded-lg shadow-2xl border border-white/5 overflow-hidden">
-                          <AnimatePresence initial={false}>
-                            <motion.img 
+                        <div className="relative w-full h-full bg-white rounded-[2rem] shadow-2xl border border-white/10 overflow-hidden" style={{ perspective: 1200 }}>
+                          <AnimatePresence initial={false} mode="wait">
+                            <motion.div
                               key={`page-${flipPage}`}
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              transition={{ duration: 0.2, ease: "easeOut" }}
-                              src={getPageUrl(flipPage)}
-                              className="absolute inset-0 w-full h-full object-contain"
-                              alt={`Page ${flipPage}`}
-                              draggable={false}
-                            />
+                              initial={{ opacity: 0, rotateY: pageDirection === "next" ? -100 : 100, scale: 0.96 }}
+                              animate={{ opacity: 1, rotateY: 0, scale: 1 }}
+                              exit={{ opacity: 0, rotateY: pageDirection === "next" ? 100 : -100, scale: 0.96 }}
+                              transition={{ duration: 0.35, ease: "easeOut" }}
+                              className="absolute inset-0"
+                              style={{ transformStyle: "preserve-3d", backfaceVisibility: "hidden" }}
+                              drag="x"
+                              dragConstraints={{ left: 0, right: 0 }}
+                              dragElastic={0.15}
+                              dragMomentum={false}
+                              onDragEnd={(_, info) => {
+                                if (info.offset.x < -80) handleNextPage();
+                                if (info.offset.x > 80) handlePrevPage();
+                              }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <img
+                                src={getPageUrl(flipPage)}
+                                className="absolute inset-0 w-full h-full object-contain"
+                                alt={`Page ${flipPage}`}
+                                draggable={false}
+                              />
+                            </motion.div>
                           </AnimatePresence>
+                          <div className="pointer-events-none absolute inset-x-0 bottom-4 text-center text-[10px] text-white/70 font-sans">
+                            {lang === "ta" ? "உரிஞ்சி அடுத்த பக்கத்திற்கு இழுக்கவும்" : "Swipe to turn the page"}
+                          </div>
                         </div>
                       ) : (
                         /* Desktop Double Page View: Draw pages to canvases directly */
