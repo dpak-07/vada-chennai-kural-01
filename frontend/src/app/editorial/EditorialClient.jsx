@@ -4,6 +4,8 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import SectionHeading from "@/components/common/SectionHeading";
 import teamData from "@/data/team.json";
 import { useLanguage } from "@/context/LanguageContext";
+import { motion } from "framer-motion";
+import { staggerItem, VIEWPORT_ONCE } from "@/lib/motion";
 
 export default function EditorialClient() {
   const { lang } = useLanguage();
@@ -68,11 +70,17 @@ export default function EditorialClient() {
         />
 
         {/* Intro Text */}
-        <div className="max-w-3xl mb-12">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={VIEWPORT_ONCE}
+          variants={staggerItem({ y: 18, duration: 0.5 })}
+          className="max-w-3xl mb-12"
+        >
           <p className="font-sans text-sm sm:text-base text-charcoal/70 leading-relaxed font-light">
             {t.description}
           </p>
-        </div>
+        </motion.div>
 
         {/* Editorial Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

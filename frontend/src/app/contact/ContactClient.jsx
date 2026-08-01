@@ -5,6 +5,8 @@ import SectionHeading from "@/components/common/SectionHeading";
 import { Mail, Phone, MapPin } from "lucide-react";
 import contactData from "@/data/contact.json";
 import { useLanguage } from "@/context/LanguageContext";
+import { motion } from "framer-motion";
+import { staggerContainer, staggerItem, VIEWPORT_ONCE } from "@/lib/motion";
 
 export default function ContactClient() {
   const { lang } = useLanguage();
@@ -43,9 +45,18 @@ export default function ContactClient() {
         {/* Title */}
         <SectionHeading title={t.title} subtitle={t.subtitle} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={VIEWPORT_ONCE}
+          variants={staggerContainer(0.12, 0.08)}
+          className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start"
+        >
           {/* Contact Details & Map (LHS) */}
-          <div className="lg:col-span-5 space-y-8">
+          <motion.div
+            variants={staggerItem({ duration: 0.55 })}
+            className="lg:col-span-5 space-y-8"
+          >
             <div className="bg-white rounded-xl border border-border-subtle p-6 space-y-6 shadow-sm">
               <h3 className="font-serif text-lg font-bold text-charcoal pb-3 border-b border-border-subtle">
                 {t.detailsTitle}
@@ -97,10 +108,13 @@ export default function ContactClient() {
                 title="Vadachennai Kural Office Location Map"
               />
             </div>
-          </div>
+          </motion.div>
 
           {/* Interactive Form (RHS) */}
-          <div className="lg:col-span-7 space-y-4">
+          <motion.div
+            variants={staggerItem({ duration: 0.55 })}
+            className="lg:col-span-7 space-y-4"
+          >
             <div className="max-w-2xl">
               <h3 className="font-serif text-xl font-bold text-charcoal mb-2">
                 {t.formTitle}
@@ -110,8 +124,8 @@ export default function ContactClient() {
               </p>
             </div>
             <ContactForm />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
