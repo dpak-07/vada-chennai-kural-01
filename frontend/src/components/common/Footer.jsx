@@ -2,9 +2,48 @@
 import Link from "next/link";
 import { Mail, Phone, MapPin } from "lucide-react";
 import contactData from "@/data/contact.json";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const { lang } = useLanguage();
+
+  const t = {
+    ta: {
+      brandTitle: "வடசென்னை குரல்",
+      brandTagline: "Vadachennai Kural",
+      brandAbout: "வடசென்னை மக்களின் உண்மையான வாழ்வியல், பண்பாடு, மற்றும் கலைகளை உலகிற்கு எடுத்துரைக்கும் மாதாந்திர டிஜிட்டல் இதழ்.",
+      quickLinks: "விரைவு இணைப்புகள்",
+      home: "முகப்பு",
+      issues: "இதழ்கள்",
+      about: "எங்களைப் பற்றி",
+      editorial: "ஆசிரியர்க்குழு",
+      contact: "தொடர்புக்கு",
+      contactHeading: "தொடர்பு விபரங்கள்",
+      socialHeading: "சமூக வலைத்தளங்கள்",
+      socialText: "புதிய செய்திகள் மற்றும் இதழ் வெளியீடுகள் பற்றிய விபரங்களை அறிய எங்களைப் பின்தொடரவும்.",
+      copyright: `© ${currentYear} வடசென்னை குரல். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.`,
+      terms: "நிபந்தனைகள்",
+      privacy: "தனியுரிமை கொள்கை"
+    },
+    en: {
+      brandTitle: "Vadachennai Kural",
+      brandTagline: "வடசென்னை குரல்",
+      brandAbout: "A monthly digital magazine amplifying the true life, culture, and arts of the people of North Chennai.",
+      quickLinks: "Quick Links",
+      home: "Home",
+      issues: "Issues",
+      about: "About Us",
+      editorial: "Editorial",
+      contact: "Contact",
+      contactHeading: "Contact Details",
+      socialHeading: "Follow Us",
+      socialText: "Follow us for updates on new issues and magazine releases.",
+      copyright: `© ${currentYear} Vadachennai Kural. All rights reserved.`,
+      terms: "Terms",
+      privacy: "Privacy Policy"
+    }
+  }[lang];
 
   return (
     <footer className="bg-charcoal text-white border-t border-primary/20 mt-auto">
@@ -18,47 +57,47 @@ export default function Footer() {
               </span>
               <div className="flex flex-col">
                 <span className="font-serif text-lg font-bold tracking-tight text-white">
-                  வடசென்னை குரல்
+                  {t.brandTitle}
                 </span>
                 <span className="font-sans text-[8px] tracking-widest text-secondary font-bold uppercase -mt-1">
-                  Vadachennai Kural
+                  {t.brandTagline}
                 </span>
               </div>
             </Link>
             <p className="text-gray-400 text-xs leading-relaxed font-light">
-              வடசென்னை மக்களின் உண்மையான வாழ்வியல், பண்பாடு, மற்றும் கலைகளை உலகிற்கு எடுத்துரைக்கும் மாதாந்திர டிஜிட்டல் இதழ்.
+              {t.brandAbout}
             </p>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-4">
             <h4 className="font-serif text-md font-bold text-secondary uppercase tracking-wider">
-              விரைவு இணைப்புகள்
+              {t.quickLinks}
             </h4>
             <ul className="space-y-2.5 text-xs text-gray-400 font-medium">
               <li>
                 <Link href="/" className="hover:text-primary transition-colors duration-200">
-                  முகப்பு (Home)
+                  {t.home}
                 </Link>
               </li>
               <li>
                 <Link href="/issues" className="hover:text-primary transition-colors duration-200">
-                  இதழ்கள் (Issues)
+                  {t.issues}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="hover:text-primary transition-colors duration-200">
-                  எங்களைப் பற்றி (About)
+                  {t.about}
                 </Link>
               </li>
               <li>
                 <Link href="/editorial" className="hover:text-primary transition-colors duration-200">
-                  ஆசிரியர்க்குழு (Editorial)
+                  {t.editorial}
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="hover:text-primary transition-colors duration-200">
-                  தொடர்புக்கு (Contact)
+                  {t.contact}
                 </Link>
               </li>
             </ul>
@@ -67,12 +106,12 @@ export default function Footer() {
           {/* Contact Details */}
           <div className="space-y-4">
             <h4 className="font-serif text-md font-bold text-secondary uppercase tracking-wider">
-              தொடர்பு விபரங்கள்
+              {t.contactHeading}
             </h4>
             <ul className="space-y-3.5 text-xs text-gray-400 font-light">
               <li className="flex items-start space-x-3.5">
                 <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                <span>{contactData.officeAddress}</span>
+                <span>{lang === "en" ? contactData.officeAddressEn : contactData.officeAddress}</span>
               </li>
               <li className="flex items-center space-x-3.5">
                 <Phone className="w-4 h-4 text-primary shrink-0" />
@@ -92,10 +131,10 @@ export default function Footer() {
           {/* Social Links */}
           <div className="space-y-4">
             <h4 className="font-serif text-md font-bold text-secondary uppercase tracking-wider">
-              சமூக வலைத்தளங்கள்
+              {t.socialHeading}
             </h4>
             <p className="text-gray-400 text-xs font-light leading-relaxed">
-              புதிய செய்திகள் மற்றும் இதழ் வெளியீடுகள் பற்றிய விபரங்களை அறிய எங்களைப் பின்தொடரவும்.
+              {t.socialText}
             </p>
             <div className="flex space-x-4">
               <a
@@ -150,13 +189,13 @@ export default function Footer() {
 
         {/* Footer bottom */}
         <div className="mt-12 pt-8 border-t border-gray-800 text-center flex flex-col md:flex-row items-center justify-between text-xs text-gray-500 font-light">
-          <p>© {currentYear} வடசென்னை குரல். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</p>
+          <p>{t.copyright}</p>
           <div className="flex space-x-6 mt-4 md:mt-0 font-medium">
             <Link href="/about" className="hover:text-primary transition-colors">
-              நிபந்தனைகள் (Terms)
+              {t.terms}
             </Link>
             <Link href="/about" className="hover:text-primary transition-colors">
-              தனியுரிமை கொள்கை (Privacy)
+              {t.privacy}
             </Link>
           </div>
         </div>

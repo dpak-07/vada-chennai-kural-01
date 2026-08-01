@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Shield, Eye, EyeOff, Lock, User, AlertCircle, ArrowLeft } from "lucide-react";
 import Button from "@/components/common/Button";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function LoginFormClient() {
   const [formData, setFormData] = useState({
@@ -14,13 +15,53 @@ export default function LoginFormClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const { lang } = useLanguage();
+
+  const t = {
+    ta: {
+      errorFields: "பயனர் பெயர் மற்றும் கடவுச்சொல்லை உள்ளிடவும்",
+      backHome: "முகப்பு பக்கத்திற்குச் செல்ல",
+      heading: "நிர்வாகி உள்நுழைவு",
+      portal: "ADMINISTRATION PORTAL",
+      successTitle: "உள்நுழைவு வெற்றிகரமாக முடிந்தது!",
+      successText: "நிர்வாகப் பகுதிக்குச் செல்ல பின்வரும் பொத்தானை அழுத்தவும்.",
+      goAdmin: "நிர்வாகப் பகுதிக்குச் செல்ல",
+      logout: "மீண்டும் உள்நுழைய",
+      username: "பயனர் பெயர்",
+      usernamePlaceholder: "உள்நுழையும் பெயர்",
+      password: "கடவுச்சொல்",
+      rememberMe: "என்னை நினைவில் கொள்க",
+      forgot: "கடவுச்சொல் மறந்ததா?",
+      forgotAlert: "கடவுச்சொல் மீட்பு அஞ்சல் அனுப்பப்பட்டது.",
+      checking: "சரிபார்க்கப்படுகிறது...",
+      signIn: "உள்நுழைக"
+    },
+    en: {
+      errorFields: "Please enter both username and password",
+      backHome: "Back to Home",
+      heading: "Admin Login",
+      portal: "ADMINISTRATION PORTAL",
+      successTitle: "Login Successful!",
+      successText: "Press the button below to go to the admin area.",
+      goAdmin: "Go to Admin Panel",
+      logout: "Logout",
+      username: "Username",
+      usernamePlaceholder: "Enter username",
+      password: "Password",
+      rememberMe: "Remember Me",
+      forgot: "Forgot Password?",
+      forgotAlert: "Password reset email has been sent.",
+      checking: "Checking...",
+      signIn: "Sign In"
+    }
+  }[lang];
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
 
     if (!formData.username.trim() || !formData.password.trim()) {
-      setError("பயனர் பெயர் மற்றும் கடவுச்சொல்லை உள்ளிடவும் (Please fill all fields)");
+      setError(t.errorFields);
       return;
     }
 
@@ -51,7 +92,7 @@ export default function LoginFormClient() {
         {/* Back Link */}
         <div className="text-left">
           <Link href="/" className="inline-flex items-center text-xs font-semibold text-charcoal/50 hover:text-primary transition gap-1">
-            <ArrowLeft className="w-3.5 h-3.5" /> முகப்பு பக்கத்திற்குச் செல்ல (Back to Home)
+            <ArrowLeft className="w-3.5 h-3.5" /> {t.backHome}
           </Link>
         </div>
 
@@ -63,10 +104,10 @@ export default function LoginFormClient() {
             </span>
             <div className="space-y-1">
               <h2 className="font-serif text-2xl font-bold text-charcoal tracking-tight">
-                நிர்வாகி உள்நுழைவு
+                {t.heading}
               </h2>
               <p className="font-sans text-[10px] tracking-widest text-secondary font-bold uppercase">
-                ADMINISTRATION PORTAL
+                {t.portal}
               </p>
             </div>
           </div>
@@ -75,17 +116,17 @@ export default function LoginFormClient() {
             <div className="text-center py-6 space-y-4">
               <Shield className="w-16 h-16 text-emerald-500 mx-auto animate-pulse" />
               <div className="space-y-1">
-                <h3 className="font-serif text-lg font-bold text-charcoal">உள்நுழைவு வெற்றிகரமாக முடிந்தது!</h3>
+                <h3 className="font-serif text-lg font-bold text-charcoal">{t.successTitle}</h3>
                 <p className="text-xs text-charcoal/60 max-w-xs mx-auto leading-relaxed">
-                  (Login Successful!) நிர்வாகப் பகுதிக்குச் செல்ல பின்வரும் பொத்தானை அழுத்தவும்.
+                  {t.successText}
                 </p>
               </div>
               <div className="flex flex-col gap-2 pt-2">
                 <Button href="/admin" variant="primary" size="sm" className="w-full text-center cursor-pointer">
-                  நிர்வாகப் பகுதிக்குச் செல்ல (Go to Admin Panel)
+                  {t.goAdmin}
                 </Button>
                 <button onClick={() => setSuccess(false)} className="text-xs text-charcoal/50 hover:underline py-1 cursor-pointer">
-                  மீண்டும் உள்நுழைய (Logout)
+                  {t.logout}
                 </button>
               </div>
             </div>
@@ -101,7 +142,7 @@ export default function LoginFormClient() {
               {/* Username Input */}
               <div className="space-y-1.5">
                 <label htmlFor="username" className="text-xs font-semibold text-charcoal/70 uppercase tracking-wider block">
-                  பயனர் பெயர் (Username)
+                  {t.username}
                 </label>
                 <div className="relative">
                   <input
@@ -111,7 +152,7 @@ export default function LoginFormClient() {
                     value={formData.username}
                     onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 bg-canvas border border-border-subtle hover:border-primary/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary rounded-lg text-sm transition font-sans"
-                    placeholder="உள்நுழையும் பெயர்"
+                    placeholder={t.usernamePlaceholder}
                   />
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40" />
                 </div>
@@ -120,7 +161,7 @@ export default function LoginFormClient() {
               {/* Password Input */}
               <div className="space-y-1.5">
                 <label htmlFor="password" className="text-xs font-semibold text-charcoal/70 uppercase tracking-wider block">
-                  கடவுச்சொல் (Password)
+                  {t.password}
                 </label>
                 <div className="relative">
                   <input
@@ -137,7 +178,7 @@ export default function LoginFormClient() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 p-0.5 hover:bg-black/5 rounded text-charcoal/40 hover:text-charcoal transition cursor-pointer"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={showPassword ? (lang === "ta" ? "கடவுச்சொல்லை மறை" : "Hide password") : (lang === "ta" ? "கடவுச்சொல்லை காட்டு" : "Show password")}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -154,10 +195,10 @@ export default function LoginFormClient() {
                     onChange={handleChange}
                     className="rounded border-border-subtle focus:ring-primary text-primary h-4 w-4"
                   />
-                  <span>என்னை நினைவில் கொள்க (Remember Me)</span>
+                  <span>{t.rememberMe}</span>
                 </label>
-                <a href="#" className="text-primary hover:underline font-semibold" onClick={(e) => { e.preventDefault(); alert("கடவுச்சொல் மீட்பு அஞ்சல் அனுப்பப்பட்டது. (Password reset simulated.)"); }}>
-                  கடவுச்சொல் மறந்ததா?
+                <a href="#" className="text-primary hover:underline font-semibold" onClick={(e) => { e.preventDefault(); alert(t.forgotAlert); }}>
+                  {t.forgot}
                 </a>
               </div>
 
@@ -168,7 +209,7 @@ export default function LoginFormClient() {
                 className="w-full py-3.5 font-bold justify-center cursor-pointer"
                 disabled={loading}
               >
-                {loading ? "சரிபார்க்கப்படுகிறது..." : "உள்நுழைக (Sign In)"}
+                {loading ? t.checking : t.signIn}
               </Button>
             </form>
           )}

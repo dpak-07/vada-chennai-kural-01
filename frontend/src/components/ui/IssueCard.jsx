@@ -22,7 +22,7 @@ export default function IssueCard({ issue }) {
       readIssueHover: "இதழை வாசிக்க",
       pagesLabel: `${pages} பக்கங்கள்`,
       readBtn: "வாசிக்க",
-      downloadTitle: "இதழைப் பதிவிறக்க (Download PDF)"
+      downloadTitle: "இதழைப் பதிவிறக்க"
     },
     en: {
       readIssueHover: "Read Issue",

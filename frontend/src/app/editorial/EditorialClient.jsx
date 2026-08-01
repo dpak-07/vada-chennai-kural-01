@@ -12,7 +12,7 @@ export default function EditorialClient() {
     ta: {
       breadcrumb: "ஆசிரியர்க்குழு",
       title: "எமது ஆசிரியர்க்குழு",
-      subtitle: "MEET THE EDITORIAL BOARD",
+      subtitle: "ஆசிரியர்க்குழுவை சந்திக்க",
       description: "வடசென்னையின் உண்மையான வரலாற்றையும் சமகால நிகழ்வுகளையும் நேர்மையுடனும் கலைநயத்துடனும் பதிவுசெய்யும் எங்களது அர்ப்பணிப்புள்ள ஆசிரியர்கள், புகைப்படக் கலைஞர்கள் மற்றும் சமூக ஆர்வலர்களின் குழுவை இங்கே அறிமுகப்படுத்துகிறோம்."
     },
     en: {
@@ -28,21 +28,28 @@ export default function EditorialClient() {
     if (lang === "en") {
       // Localize team member names and roles
       const enNames = {
-        "சுபாஷ் சந்திரபோஸ்": "Subash Chandra Bose",
-        "கார்த்திக் ராஜா": "Karthik Raja",
-        "ஆனந்தி குமார்": "Anandhi Kumar",
-        "விஜய் பாஸ்கர்": "Vijay Bhaskar"
+        "முனைவர். அ. இளங்கோவன்": "Dr. A. Elangovan",
+        "க. செல்வி": "K. Selvi",
+        "இரா. சரவணன்": "R. Saravanan",
+        "சு. கபிலன்": "S. Kabilan"
       };
       const enRoles = {
-        "தலைமை ஆசிரியர் (Editor-in-Chief)": "Editor-in-Chief",
-        "இணை ஆசிரியர் (Associate Editor)": "Associate Editor",
-        "புகைப்படக் கலைஞர் (Lead Photographer)": "Lead Photographer",
-        "கள நிருபர் (Field Reporter)": "Field Reporter"
+        "தலைமை ஆசிரியர்": "Editor-in-Chief",
+        "துணை ஆசிரியர்": "Deputy Editor",
+        "புகைப்படக் கலைஞர் & வடிவமைப்பாளர்": "Photojournalist & Designer",
+        "விளையாட்டுப் பிரிவு செய்தியாளர்": "Sports Correspondent"
+      };
+      const enDescriptions = {
+        "முனைவர். அ. இளங்கோவன்": "With over 20 years of experience in Tamil literature and a deep engagement with North Chennai historical research.",
+        "க. செல்வி": "A field researcher with 10 years of experience covering the social issues of marginalized communities and women's livelihoods.",
+        "இரா. சரவணன்": "Has documented the lives of North Chennai's working people and their traditional art forms through his camera.",
+        "சு. கபிலன்": "Compiles news and interviews about North Chennai's football, boxing, and carrom players."
       };
       return {
         ...member,
         name: enNames[member.name] || member.name,
-        role: enRoles[member.role] || member.role
+        role: enRoles[member.role] || member.role,
+        description: enDescriptions[member.name] || member.description
       };
     }
     return member;

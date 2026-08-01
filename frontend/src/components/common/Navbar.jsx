@@ -52,7 +52,9 @@ export default function Navbar() {
       issues: "இதழ்கள்",
       about: "எங்களைப் பற்றி",
       editorial: "ஆசிரியர்க்குழு",
-      contact: "தொடர்புக்கு"
+      contact: "தொடர்புக்கு",
+      toggleMenu: "மொபைல் பட்டியை மாற்று",
+      switchLang: "English-க்கு மாறுக"
     },
     en: {
       slogan: "Reason, humanity and the true voice of North Chennai",
@@ -64,7 +66,9 @@ export default function Navbar() {
       issues: "Issues",
       about: "About Us",
       editorial: "Editorial Board",
-      contact: "Contact"
+      contact: "Contact",
+      toggleMenu: "Toggle mobile menu",
+      switchLang: "Switch to தமிழ்"
     }
   }[lang];
 
@@ -193,7 +197,7 @@ export default function Navbar() {
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="md:hidden p-2 text-charcoal hover:bg-black/5 rounded-md transition duration-200 cursor-pointer"
-                aria-label="Toggle mobile menu"
+                aria-label={t.toggleMenu}
               >
                 {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
@@ -267,7 +271,7 @@ export default function Navbar() {
                   onClick={() => { toggleLanguage(); setIsOpen(false); }}
                   className="w-full flex items-center justify-center gap-2 bg-canvas hover:bg-gray-100 border border-border-subtle py-3 rounded-lg text-xs font-bold text-charcoal/80 cursor-pointer"
                 >
-                  <Languages className="w-4 h-4 text-primary" /> {lang === "ta" ? "English-க்கு மாறுக" : "தமிழ்-க்கு மாறுக"}
+                  <Languages className="w-4 h-4 text-primary" /> {t.switchLang}
                 </button>
 
                 <Button

@@ -13,11 +13,11 @@ export default function ContactClient() {
     ta: {
       breadcrumb: "தொடர்புக்கு",
       title: "எங்களைத் தொடர்பு கொள்ள",
-      subtitle: "GET IN TOUCH",
+      subtitle: "தொடர்பு கொள்ளுங்கள்",
       detailsTitle: "தொடர்பு விபரங்கள்",
-      addressLabel: "அலுவலக முகவரி (Address)",
-      emailLabel: "மின்னஞ்சல் முகவரி (Email)",
-      phoneLabel: "தொலைபேசி எண் (Phone)",
+      addressLabel: "அலுவலக முகவரி",
+      emailLabel: "மின்னஞ்சல் முகவரி",
+      phoneLabel: "தொலைபேசி எண்",
       formTitle: "உங்கள் கருத்துக்கள் & படைப்புகளை அனுப்புக",
       formSubtitle: "எங்கள் இதழில் தங்கள் கட்டுரைகள் அல்லது படைப்புகள் பிரசுரிக்கப்பட விரும்பினால், அல்லது ஏதேனும் பரிந்துரைகள் இருந்தால் கீழே உள்ள படிவத்தைப் பயன்படுத்தி எங்களைத் தொடர்பு கொள்ளவும்."
     },
@@ -58,7 +58,7 @@ export default function ContactClient() {
                   </div>
                   <div>
                     <h4 className="font-serif font-bold text-charcoal text-xs uppercase tracking-wider mb-1">{t.addressLabel}</h4>
-                    <p className="leading-relaxed text-xs sm:text-sm">{contactData.officeAddress}</p>
+                    <p className="leading-relaxed text-xs sm:text-sm">{lang === "en" ? contactData.officeAddressEn : contactData.officeAddress}</p>
                   </div>
                 </li>
 

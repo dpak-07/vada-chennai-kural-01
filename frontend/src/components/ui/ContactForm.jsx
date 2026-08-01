@@ -18,23 +18,23 @@ export default function ContactForm() {
 
   const t = {
     ta: {
-      nameReq: "பெயர் கட்டாயம் தேவை (Name is required)",
-      emailReq: "மின்னஞ்சல் கட்டாயம் தேவை (Email is required)",
-      emailInvalid: "மின்னஞ்சல் முகவரி தவறானது (Invalid email)",
-      subjectReq: "பொருள் கட்டாயம் தேவை (Subject is required)",
-      messageReq: "செய்தி கட்டாயம் தேவை (Message is required)",
-      successTitle: "செய்தி அனுப்பப்பட்டது! (Message Sent!)",
+      nameReq: "பெயர் கட்டாயம் தேவை",
+      emailReq: "மின்னஞ்சல் கட்டாயம் தேவை",
+      emailInvalid: "மின்னஞ்சல் முகவரி தவறானது",
+      subjectReq: "பொருள் கட்டாயம் தேவை",
+      messageReq: "செய்தி கட்டாயம் தேவை",
+      successTitle: "செய்தி அனுப்பப்பட்டது!",
       successText: "எங்கள் குழு உங்களை விரைவில் தொடர்பு கொள்ளும். உங்கள் ஆதரவிற்கு நன்றி.",
-      sendAnother: "மீண்டும் அனுப்ப (Send Another)",
-      labelName: "உங்கள் பெயர் (Your Name)",
-      labelEmail: "மின்னஞ்சல் (Email Address)",
-      labelSubject: "பொருள் (Subject)",
-      labelMessage: "செய்தி (Message)",
+      sendAnother: "மீண்டும் அனுப்ப",
+      labelName: "உங்கள் பெயர்",
+      labelEmail: "மின்னஞ்சல்",
+      labelSubject: "பொருள்",
+      labelMessage: "செய்தி",
       placeholderName: "பெயர்",
       placeholderSubject: "விஷயம்",
       placeholderMessage: "உங்கள் செய்தியை இங்கு தட்டச்சு செய்யவும்...",
       sending: "அனுப்பப்படுகிறது...",
-      sendBtn: "அனுப்புக (Send Message)"
+      sendBtn: "அனுப்புக"
     },
     en: {
       nameReq: "Name is required",

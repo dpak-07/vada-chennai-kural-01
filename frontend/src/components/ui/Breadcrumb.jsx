@@ -1,15 +1,19 @@
 "use client";
 import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Breadcrumb({ items }) {
+  const { lang } = useLanguage();
+  const home = lang === "ta" ? "முகப்பு" : "Home";
+
   return (
-    <nav className="flex mb-8" aria-label="Breadcrumb">
+    <nav className="flex mb-8" aria-label={lang === "ta" ? "முகப்புப் பாதை" : "Breadcrumb"}>
       <ol className="inline-flex items-center space-x-1 md:space-x-2 text-xs md:text-sm font-sans font-medium text-charcoal/50">
         <li className="inline-flex items-center">
           <Link href="/" className="inline-flex items-center hover:text-primary transition-colors">
             <Home className="w-4 h-4 mr-2" />
-            முகப்பு
+            {home}
           </Link>
         </li>
         {items.map((item, index) => {

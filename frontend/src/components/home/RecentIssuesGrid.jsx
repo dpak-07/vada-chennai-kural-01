@@ -12,7 +12,7 @@ export default function RecentIssuesGrid({ issues }) {
 
   const t = {
     ta: {
-      btnText: "அனைத்து இதழ்களையும் காண்க (View All Issues)"
+      btnText: "அனைத்து இதழ்களையும் காண்க"
     },
     en: {
       btnText: "View All Issues"

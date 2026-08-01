@@ -344,7 +344,8 @@ export default function AdminDashboard() {
       editIssue: "இதழைத் திருத்துக",
       email: "மின்னஞ்சல் விபரம்",
       date: "பதிவு தேதி",
-      status: "நிலை"
+      status: "நிலை",
+      edit: "திருத்து"
     },
     en: {
       adminTitle: "Admin Panel",
@@ -377,7 +378,8 @@ export default function AdminDashboard() {
       editIssue: "Edit Issue Details",
       email: "Subscriber Email",
       date: "Date Subscribed",
-      status: "Status"
+      status: "Status",
+      edit: "Edit"
     }
   }[lang];
 
@@ -543,7 +545,7 @@ export default function AdminDashboard() {
                               <td className="py-3 font-medium">{displayTitle}</td>
                               <td className="py-3 text-center font-sans">{issue.pages}</td>
                               <td className="py-3 text-right">
-                                <button onClick={() => openEditModal(issue)} className="text-secondary hover:underline cursor-pointer">Edit</button>
+                                <button onClick={() => openEditModal(issue)} className="text-secondary hover:underline cursor-pointer">{t.edit}</button>
                               </td>
                             </tr>
                           );

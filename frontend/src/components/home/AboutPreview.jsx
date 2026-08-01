@@ -12,10 +12,10 @@ export default function AboutPreview() {
     ta: {
       heading: "ஊடகங்களால் மறக்கப்பட்ட வடசென்னையின் உண்மையான வரலாற்றை ஆவணப்படுத்துகிறோம்.",
       story: aboutData.story,
-      readMore: "மேலும் அறிய (Read Full Story)",
-      missionTitle: "எமது நோக்கம் (Our Mission)",
+      readMore: "மேலும் அறிய",
+      missionTitle: "எமது நோக்கம்",
       missionDesc: "வடசென்னை மக்களின் உண்மையான வாழ்வியல், பண்பாடு, மற்றும் கலைகளை உலகிற்கு எடுத்துரைத்தல்.",
-      visionTitle: "எமது பார்வை (Our Vision)",
+      visionTitle: "எமது பார்வை",
       visionDesc: "வடசென்னை குறித்த நேர்மறையான கண்ணோட்டத்தை உலகளாவிய அளவில் உருவாக்குதல்."
     },
     en: {

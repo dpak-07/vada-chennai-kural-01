@@ -2,8 +2,10 @@
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Modal({ isOpen, onClose, title, children }) {
+  const { lang } = useLanguage();
   // Prevent background scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -43,7 +45,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
               <button
                 onClick={onClose}
                 className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-charcoal transition duration-200 cursor-pointer"
-                aria-label="Close modal"
+                aria-label={lang === "ta" ? "மூடுக" : "Close modal"}
               >
                 <X className="w-5 h-5" />
               </button>

@@ -30,7 +30,7 @@ export default function Hero({ latestIssueId }) {
       {/* Background Graphic */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/15 via-charcoal/95 to-charcoal z-0" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15vw] font-serif font-black text-white/[0.01] tracking-widest uppercase select-none pointer-events-none z-0">
-        EDITORIAL
+        {lang === "ta" ? "ஆசிரியர் குறிப்பு" : "EDITORIAL"}
       </div>
 
       <div className="relative w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 z-10 animate-fade-in">

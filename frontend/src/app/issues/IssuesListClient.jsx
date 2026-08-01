@@ -18,16 +18,20 @@ export default function IssuesListClient({ initialIssues }) {
     ta: {
       breadcrumb: "இதழ்கள்",
       title: "இதழ்கள் காப்பகம்",
-      subtitle: "MAGAZINE ARCHIVE",
+      subtitle: "இதழ்கள் காப்பகம்",
       noIssuesTitle: "இதழ்கள் ஏதும் இல்லை",
-      noIssuesText: "தங்கள் தேடலுக்குப் பொருத்தமான இதழ்கள் எதுவும் இல்லை. தயவுசெய்து வேறு வார்த்தைகளை உள்ளிடவும்."
+      noIssuesText: "தங்கள் தேடலுக்குப் பொருத்தமான இதழ்கள் எதுவும் இல்லை. தயவுசெய்து வேறு வார்த்தைகளை உள்ளிடவும்.",
+      prevPage: "முந்தைய பக்கம்",
+      nextPage: "அடுத்த பக்கம்"
     },
     en: {
       breadcrumb: "Issues",
       title: "Magazine Archive",
       subtitle: "MAGAZINE ARCHIVE",
       noIssuesTitle: "No Issues Found",
-      noIssuesText: "No issues match your search criteria. Please try using different keywords."
+      noIssuesText: "No issues match your search criteria. Please try using different keywords.",
+      prevPage: "Previous Page",
+      nextPage: "Next Page"
     }
   }[lang];
 
@@ -94,7 +98,7 @@ export default function IssuesListClient({ initialIssues }) {
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 className="w-10 h-10 rounded-md border border-border-subtle hover:border-primary text-charcoal/60 hover:text-primary transition-all flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                aria-label="Previous Page"
+                aria-label={t.prevPage}
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -121,7 +125,7 @@ export default function IssuesListClient({ initialIssues }) {
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className="w-10 h-10 rounded-md border border-border-subtle hover:border-primary text-charcoal/60 hover:text-primary transition-all flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                aria-label="Next Page"
+                aria-label={t.nextPage}
               >
                 <ChevronRight className="w-5 h-5" />
               </button>

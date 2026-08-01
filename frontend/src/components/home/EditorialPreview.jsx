@@ -13,7 +13,7 @@ export default function EditorialPreview() {
 
   const t = {
     ta: {
-      btnText: "முழு குழுவையும் காண்க (Meet the Editorial Team)"
+      btnText: "முழு குழுவையும் காண்க"
     },
     en: {
       btnText: "Meet the Editorial Team"
@@ -24,19 +24,25 @@ export default function EditorialPreview() {
   const localizedTeam = previewTeam.map(member => {
     if (lang === "en") {
       const enNames = {
-        "சுபாஷ் சந்திரபோஸ்": "Subash Chandra Bose",
-        "கார்த்திக் ராஜா": "Karthik Raja",
-        "ஆனந்தி குமார்": "Anandhi Kumar"
+        "முனைவர். அ. இளங்கோவன்": "Dr. A. Elangovan",
+        "க. செல்வி": "K. Selvi",
+        "இரா. சரவணன்": "R. Saravanan"
       };
       const enRoles = {
-        "தலைமை ஆசிரியர் (Editor-in-Chief)": "Editor-in-Chief",
-        "இணை ஆசிரியர் (Associate Editor)": "Associate Editor",
-        "புகைப்படக் கலைஞர் (Lead Photographer)": "Lead Photographer"
+        "தலைமை ஆசிரியர்": "Editor-in-Chief",
+        "துணை ஆசிரியர்": "Deputy Editor",
+        "புகைப்படக் கலைஞர் & வடிவமைப்பாளர்": "Photojournalist & Designer"
+      };
+      const enDescriptions = {
+        "முனைவர். அ. இளங்கோவன்": "With over 20 years of experience in Tamil literature and a deep engagement with North Chennai historical research.",
+        "க. செல்வி": "A field researcher with 10 years of experience covering the social issues of marginalized communities and women's livelihoods.",
+        "இரா. சரவணன்": "Has documented the lives of North Chennai's working people and their traditional art forms through his camera."
       };
       return {
         ...member,
         name: enNames[member.name] || member.name,
-        role: enRoles[member.role] || member.role
+        role: enRoles[member.role] || member.role,
+        description: enDescriptions[member.name] || member.description
       };
     }
     return member;

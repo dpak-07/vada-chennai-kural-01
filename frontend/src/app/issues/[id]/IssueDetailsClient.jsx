@@ -153,24 +153,41 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
   // Localized general texts
   const t = {
     ta: {
-      share: "பகிர்க (Share)",
+      share: "பகிர்க",
       copied: "நகலெடுக்கப்பட்டது!",
       copyLink: "இணைப்பை நகலெடு",
       details: "இதழ் விபரங்கள்",
       pages: "பக்கங்கள்",
       date: "வெளியீட்டு தேதி",
       featured: "இதழின் முக்கிய கட்டுரைகள்",
-      flipView: "3D ஃபிளிப்புக் காட்சி (Flipbook)",
-      pdfView: "PDF ஆவணம் (PDF Document)",
-      flipbookTitle: "3D இதழ் ஃபிளிப்பர் (Interactive HTML5 Flipbook)",
-      downloadPdf: "இதழை பதிவிறக்குக (Download PDF)",
-      openPdf: "புதிய விண்டோவில் திறக்க (Open PDF)",
+      flipView: "3D ஃபிளிப்புக் காட்சி",
+      pdfView: "PDF ஆவணம்",
+      flipbookTitle: "3D இதழ் ஃபிளிப்பர்",
+      downloadPdf: "இதழை பதிவிறக்குக",
+      openPdf: "புதிய விண்டோவில் திறக்க",
       related: "தொடர்புடைய இதழ்கள்",
+      relatedSub: "மேலும் இதழ்கள்",
       pageLabel: "பக்கம்",
       loading: "இதழ் பக்கங்களை ஏற்றுகிறது...",
       officialSocials: "அதிகாரப்பூர்வ பக்கங்கள்",
       references: "ஆவணக் குறிப்புகள் & தகவல்கள்",
-      readReference: "குறிப்புத் தரவை வாசிக்க"
+      readReference: "குறிப்புத் தரவை வாசிக்க",
+      pdfReaderTitle: "நிலையான PDF வாசிப்பான்",
+      pdfReaderDesc: "எமது பிரசுர இதழின் அசல் PDF கோப்பினை உங்கள் உலாவியில் நேரடியாக வாசிக்கலாம்.",
+      pdfLoadError: "PDF-ஐ ஏற்ற முடியவில்லை. தயவுசெய்து கீழே பதிவிறக்கவும்.",
+      zoomIn: "பெரிதாக்கு",
+      zoomOut: "சுருக்கு",
+      slideshow: "தானியங்கி காட்சி",
+      firstPage: "முதல் பக்கம்",
+      prevPage: "முந்தைய பக்கம்",
+      nextPage: "அடுத்த பக்கம்",
+      lastPage: "கடைசி பக்கம்",
+      facebookPage: "பேஸ்புக் பக்கம்",
+      twitterProfile: "ட்விட்டர் / எக்ஸ் சுயவிவரம்",
+      instagramFeed: "இன்ஸ்டாகிராம் ஃபீட்",
+      youtubeChannel: "யூடியூப் சேனல்",
+      viduthalaiArchive: "விடுதலை ஆவணக்காப்பகம்",
+      pubhtml5Guide: "PubHTML5 ஃபிளிப்புக் வழிகாட்டி"
     },
     en: {
       share: "Share This Issue",
@@ -186,11 +203,28 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
       downloadPdf: "Download PDF",
       openPdf: "Open PDF in New Window",
       related: "Related Issues",
+      relatedSub: "RELATED ISSUES",
       pageLabel: "Page",
       loading: "Loading magazine pages...",
       officialSocials: "Official Handles",
       references: "References & Resources",
-      readReference: "Read Reference Source"
+      readReference: "Read Reference Source",
+      pdfReaderTitle: "Standard PDF Reader",
+      pdfReaderDesc: "Read the original PDF file of this issue directly in your browser.",
+      pdfLoadError: "PDF could not be loaded. Please download it below.",
+      zoomIn: "Zoom In",
+      zoomOut: "Zoom Out",
+      slideshow: "Slideshow Mode",
+      firstPage: "First Page",
+      prevPage: "Previous Page",
+      nextPage: "Next Page",
+      lastPage: "Last Page",
+      facebookPage: "Facebook Page",
+      twitterProfile: "Twitter / X Profile",
+      instagramFeed: "Instagram Feed",
+      youtubeChannel: "YouTube Channel",
+      viduthalaiArchive: "Viduthalai Archive",
+      pubhtml5Guide: "PubHTML5 Flipbook Guide"
     }
   }[lang];
 
@@ -319,7 +353,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                   className="flex items-center gap-2 text-charcoal/70 hover:text-primary transition font-sans font-medium"
                 >
                   <span className="w-2 h-2 rounded-full bg-[#1877F2]"></span>
-                  Facebook Page
+                  {t.facebookPage}
                 </a>
                 <a 
                   href="https://twitter.com" 
@@ -328,7 +362,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                   className="flex items-center gap-2 text-charcoal/70 hover:text-primary transition font-sans font-medium"
                 >
                   <span className="w-2 h-2 rounded-full bg-black"></span>
-                  Twitter / X Profile
+                  {t.twitterProfile}
                 </a>
                 <a 
                   href="https://instagram.com" 
@@ -337,7 +371,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                   className="flex items-center gap-2 text-charcoal/70 hover:text-primary transition font-sans font-medium"
                 >
                   <span className="w-2 h-2 rounded-full bg-[#E1306C]"></span>
-                  Instagram Feed
+                  {t.instagramFeed}
                 </a>
                 <a 
                   href="https://youtube.com" 
@@ -346,7 +380,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                   className="flex items-center gap-2 text-charcoal/70 hover:text-primary transition font-sans font-medium"
                 >
                   <span className="w-2 h-2 rounded-full bg-[#FF0000]"></span>
-                  YouTube Channel
+                  {t.youtubeChannel}
                 </a>
               </div>
             </div>
@@ -357,7 +391,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
               </h4>
               <div className="flex flex-col space-y-2.5 text-xs text-charcoal/70">
                 <div className="space-y-1">
-                  <span className="font-bold block text-primary font-serif">Viduthalai Archive</span>
+                  <span className="font-bold block text-primary font-serif">{t.viduthalaiArchive}</span>
                   <p className="text-[10px] text-charcoal/50 leading-relaxed font-light">
                     {lang === "ta" 
                       ? "வடசென்னையின் பகுத்தறிவு இயக்கங்கள் மற்றும் வரலாற்று குறிப்புகளுக்கான அசல் தரவுகள்."
@@ -373,7 +407,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                   </a>
                 </div>
                 <div className="space-y-1 pt-1.5 border-t border-border-subtle/50">
-                  <span className="font-bold block text-primary font-serif">PubHTML5 Flipbook Guide</span>
+                  <span className="font-bold block text-primary font-serif">{t.pubhtml5Guide}</span>
                   <p className="text-[10px] text-charcoal/50 leading-relaxed font-light">
                     {lang === "ta"
                       ? "3D புத்தக பிரசுர வடிவமைப்பு மற்றும் இணைய வாசிப்புத் தொழில்நுட்ப விளக்கக்குறிப்பு."
@@ -467,11 +501,11 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                     {displayTitle} - {displayMonth}
                   </span>
                   <div className="flex items-center space-x-3 text-white/70">
-                    <button onClick={() => setZoom(prev => Math.max(0.8, prev - 0.1))} className="hover:text-white cursor-pointer" title="Zoom Out"><ZoomOut className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setZoom(prev => Math.max(0.8, prev - 0.1))} className="hover:text-white cursor-pointer" title={t.zoomOut}><ZoomOut className="w-3.5 h-3.5" /></button>
                     <span className="text-[9px] font-sans font-bold">{Math.round(zoom * 100)}%</span>
-                    <button onClick={() => setZoom(prev => Math.min(1.5, prev + 0.1))} className="hover:text-white cursor-pointer" title="Zoom In"><ZoomIn className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setZoom(prev => Math.min(1.5, prev + 0.1))} className="hover:text-white cursor-pointer" title={t.zoomIn}><ZoomIn className="w-3.5 h-3.5" /></button>
                     <span className="text-white/10">|</span>
-                    <button onClick={() => setIsPlaying(!isPlaying)} className={`hover:text-white cursor-pointer ${isPlaying ? "text-primary animate-pulse" : ""}`} title="Slideshow Mode"><Play className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setIsPlaying(!isPlaying)} className={`hover:text-white cursor-pointer ${isPlaying ? "text-primary animate-pulse" : ""}`} title={t.slideshow}><Play className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
 
@@ -636,7 +670,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                       )}
                     </div>
                   ) : (
-                    <div className="text-white text-xs text-center">PDF could not be loaded. Please download it below.</div>
+                    <div className="text-white text-xs text-center">{t.pdfLoadError}</div>
                   )}
 
                 </div>
@@ -648,7 +682,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                       onClick={() => !isFlipping && setFlipPage(1)} 
                       disabled={flipPage === 1 || isFlipping || loadingPdf}
                       className="p-1.5 rounded hover:bg-white/10 hover:text-white disabled:opacity-20 cursor-pointer"
-                      title="First Page"
+                      title={t.firstPage}
                     >
                       <ChevronsLeft className="w-4 h-4" />
                     </button>
@@ -656,7 +690,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                       onClick={handlePrevPage} 
                       disabled={flipPage === 1 || isFlipping || loadingPdf}
                       className="p-1.5 rounded hover:bg-white/10 hover:text-white disabled:opacity-20 cursor-pointer"
-                      title="Previous Page"
+                      title={t.prevPage}
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
@@ -673,7 +707,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                       onClick={handleNextPage} 
                       disabled={((isMobile ? flipPage >= totalPages : flipPage >= totalPages - 1) || isFlipping || loadingPdf)}
                       className="p-1.5 rounded hover:bg-white/10 hover:text-white disabled:opacity-20 cursor-pointer"
-                      title="Next Page"
+                      title={t.nextPage}
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -681,7 +715,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                       onClick={() => !isFlipping && setFlipPage(isMobile ? totalPages : totalPages - 1)} 
                       disabled={((isMobile ? flipPage >= totalPages : flipPage >= totalPages - 1) || isFlipping || loadingPdf)}
                       className="p-1.5 rounded hover:bg-white/10 hover:text-white disabled:opacity-20 cursor-pointer"
-                      title="Last Page"
+                      title={t.lastPage}
                     >
                       <ChevronsRight className="w-4 h-4" />
                     </button>
@@ -726,9 +760,9 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
               <div className="w-full bg-[#1e1e1e] rounded-xl overflow-hidden border border-border-subtle p-8 flex flex-col items-center justify-center text-center text-white space-y-6 min-h-[500px]">
                 <FileText className="w-16 h-16 text-primary animate-bounce" />
                 <div className="space-y-2">
-                  <h4 className="font-serif text-base font-bold">Standard PDF Reader</h4>
+                  <h4 className="font-serif text-base font-bold">{t.pdfReaderTitle}</h4>
                   <p className="text-[11px] text-white/60 font-light leading-relaxed">
-                    எமது பிரசுர இதழின் அசல் PDF கோப்பினை உங்கள் உலாவியில் நேரடியாக வாசிக்கலாம்.
+                    {t.pdfReaderDesc}
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -758,7 +792,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
       {/* Related Issues Section */}
       {relatedIssues && relatedIssues.length > 0 && (
         <div className="border-t border-border-subtle pt-16 mt-16 space-y-8">
-          <SectionHeading title={t.related} subtitle="RELATED ISSUES" />
+          <SectionHeading title={t.related} subtitle={t.relatedSub} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {relatedIssues.map((issue) => (
               <IssueCard key={issue.id} issue={issue} />

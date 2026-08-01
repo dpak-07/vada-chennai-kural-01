@@ -20,11 +20,11 @@ export default function LatestIssuePreview({ issue }) {
   // Localized texts
   const t = {
     ta: {
-      latestTag: "புதிய இதழ் (LATEST ISSUE)",
+      latestTag: "புதிய இதழ்",
       pagesLabel: `${issue.pages} பக்கங்கள்`,
-      highlights: "இதழின் முக்கிய அம்சங்கள் (Highlights)",
-      readOnline: "ஆன்லைனில் வாசிக்க (Read Online)",
-      download: "இதழைப் பதிவிறக்க (Download PDF)"
+      highlights: "இதழின் முக்கிய அம்சங்கள்",
+      readOnline: "ஆன்லைனில் வாசிக்க",
+      download: "இதழைப் பதிவிறக்க"
     },
     en: {
       latestTag: "Latest Release",

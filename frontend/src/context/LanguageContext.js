@@ -13,6 +13,12 @@ export function LanguageProvider({ children }) {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = lang;
+    }
+  }, [lang]);
+
   const toggleLanguage = () => {
     const newLang = lang === "ta" ? "en" : "ta";
     setLang(newLang);

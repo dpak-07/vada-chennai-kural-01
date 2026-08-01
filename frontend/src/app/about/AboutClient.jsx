@@ -13,16 +13,16 @@ export default function AboutClient({ data }) {
     ta: {
       breadcrumb: "எங்களைப் பற்றி",
       heading: "எங்களைப் பற்றி",
-      subheading: "OUR STORY",
+      subheading: "எங்களது கதை",
       intro: "வடசென்னையின் கலை, பண்பாடு மற்றும் உழைப்பை ஆவணப்படுத்தும் புதிய அத்தியாயம்.",
       story: story,
       quote: "“ஊடகங்களின் தவறான கண்ணோட்டங்களை மாற்றி, வடசென்னையின் உண்மையான பெருமையை உலகிற்கு அறிவிப்பதே எங்களது லட்சியம்.”",
-      missionTitle: "எமது நோக்கம் (Our Mission)",
+      missionTitle: "எமது நோக்கம்",
       missionDesc: mission,
-      visionTitle: "எமது பார்வை (Our Vision)",
+      visionTitle: "எமது பார்வை",
       visionDesc: vision,
       milestones: "வளர்ச்சிப் பாதை",
-      milestonesSub: "OUR MILESTONES",
+      milestonesSub: "எங்களது மைல்கற்கள்",
       timeline: timeline
     },
     en: {

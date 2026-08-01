@@ -22,13 +22,13 @@ export default function Home() {
       thoughtQuote: "“மனிதனுக்கு அழகு அறிவே தவிர ஆடம்பரம் அல்ல! தன்மானமே மனிதனுக்கு உயிர்; பகுத்தறிவே மனிதனின் ஆயுதம்.” — தந்தை பெரியார்",
       thoughtBrand: "வடசென்னை குரல் • தினசரி சிந்தனை",
       latestHeading: "புதிய இதழ் வெளியீடு",
-      latestSub: "LATEST RELEASE",
+      latestSub: "புதிய வெளியீடு",
       recentHeading: "சமீபத்திய இதழ்கள்",
-      recentSub: "RECENT ISSUES",
+      recentSub: "சமீபத்திய இதழ்கள்",
       aboutHeading: "எங்கள் இதழின் குரல்",
-      aboutSub: "ABOUT OUR VISION",
+      aboutSub: "எங்களது பார்வை",
       editorialHeading: "ஆசிரியர்க்குழு",
-      editorialSub: "EDITORIAL BOARD"
+      editorialSub: "ஆசிரியர்க்குழு"
     },
     en: {
       thoughtTag: "Thought of the Day",

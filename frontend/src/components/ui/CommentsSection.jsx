@@ -13,9 +13,9 @@ export default function CommentsSection({ issueId }) {
 
   const t = {
     ta: {
-      commentsTitle: "கருத்துகள் (Comments)",
+      commentsTitle: "வாசகர் கருத்துகள்",
       noComments: "இன்னும் கருத்துகள் இல்லை. முதல் கருத்தை எழுதுங்கள்!",
-      placeholderName: "உங்கள் பெயர் (Your Name)",
+      placeholderName: "உங்கள் பெயர்",
       placeholderComment: "இங்கு உங்கள் கருத்தை எழுதவும்...",
       submitBtn: "கருத்துரையை சமர்ப்பி",
       submitting: "சமர்ப்பிக்கிறது...",

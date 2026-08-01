@@ -1,7 +1,9 @@
 "use client";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Loader({ fullScreen = false }) {
+  const { lang } = useLanguage();
   const containerClasses = fullScreen 
     ? "fixed inset-0 z-50 flex items-center justify-center bg-canvas/80 backdrop-blur-sm"
     : "flex items-center justify-center p-8";
@@ -29,7 +31,7 @@ export default function Loader({ fullScreen = false }) {
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             className="font-serif italic text-primary text-sm tracking-widest uppercase"
           >
-            வடசென்னை குரல்...
+            {lang === "ta" ? "வடசென்னை குரல்..." : "Vadachennai Kural..."}
           </motion.p>
         )}
       </div>

@@ -3,10 +3,35 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, CheckCircle } from "lucide-react";
 import Button from "../common/Button";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle, loading, success
+  const { lang } = useLanguage();
+
+  const t = {
+    ta: {
+      tag: "செய்திமடல்",
+      title: "புதிய இதழ்கள் மற்றும் செய்திகளை உடனுக்குடன் பெறுக!",
+      desc: "எங்கள் இதழ் வெளிவரும்போது உங்கள் மின்னஞ்சல் முகவரிக்கு நேரடியாகப் பெற இன்றே பதிவு செய்யவும்.",
+      successTitle: "நன்றி!",
+      successText: "உங்கள் மின்னஞ்சல் வெற்றிகரமாகப் பதிவு செய்யப்பட்டது.",
+      placeholder: "உங்கள் மின்னஞ்சல் முகவரி",
+      loading: "பதிவாகிறது...",
+      subscribe: "பதிவு செய்க"
+    },
+    en: {
+      tag: "Newsletter",
+      title: "Get new issues and updates straight to your inbox!",
+      desc: "Subscribe now to receive our latest issue directly on your email whenever it is released.",
+      successTitle: "Thank You!",
+      successText: "Your email has been subscribed successfully.",
+      placeholder: "Your Email Address",
+      loading: "Subscribing...",
+      subscribe: "Subscribe"
+    }
+  }[lang];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -27,13 +52,13 @@ export default function Newsletter() {
       <div className="relative max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 z-10">
         <div className="text-left space-y-3 max-w-xl">
           <span className="text-secondary font-sans font-bold text-xs uppercase tracking-wider">
-            செய்திமடல் (Newsletter)
+            {t.tag}
           </span>
           <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white leading-tight">
-            புதிய இதழ்கள் மற்றும் செய்திகளை உடனுக்குடன் பெறுக!
+            {t.title}
           </h3>
           <p className="text-white/80 font-sans text-xs sm:text-sm font-light leading-relaxed">
-            எங்கள் இதழ் வெளிவரும்போது உங்கள் மின்னஞ்சல் முகவரிக்கு நேரடியாகப் பெற இன்றே பதிவு செய்யவும்.
+            {t.desc}
           </p>
         </div>
 
@@ -46,10 +71,10 @@ export default function Newsletter() {
             >
               <CheckCircle className="w-10 h-10 text-secondary mx-auto mb-3" />
               <h4 className="text-white font-serif font-bold text-lg mb-1">
-                நன்றி! (Subscription Confirmed!)
+                {t.successTitle}
               </h4>
               <p className="text-white/80 text-xs font-light">
-                உங்கள் மின்னஞ்சல் வெற்றிகரமாகப் பதிவு செய்யப்பட்டது.
+                {t.successText}
               </p>
             </motion.div>
           ) : (
@@ -59,7 +84,7 @@ export default function Newsletter() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="உங்கள் மின்னஞ்சல் முகவரி (Your Email)"
+                  placeholder={t.placeholder}
                   required
                   className="w-full bg-white/10 text-white placeholder-white/50 border border-white/20 focus:border-secondary focus:outline-none rounded-lg py-3.5 pl-11 pr-4 text-sm transition-all font-sans"
                 />
@@ -72,7 +97,7 @@ export default function Newsletter() {
                 disabled={status === "loading"}
                 className="py-3.5 px-6 font-bold cursor-pointer"
               >
-                {status === "loading" ? "பதிவாகிறது..." : "பதிவு செய்க (Subscribe)"}
+                {status === "loading" ? t.loading : t.subscribe}
               </Button>
             </form>
           )}
