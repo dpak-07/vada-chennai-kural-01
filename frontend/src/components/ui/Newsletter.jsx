@@ -65,8 +65,9 @@ export default function Newsletter() {
         <div className="w-full md:max-w-md shrink-0">
           {status === "success" ? (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.85, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
               className="bg-white/10 backdrop-blur-md rounded-xl p-6 text-center border border-white/20"
             >
               <CheckCircle className="w-10 h-10 text-secondary mx-auto mb-3" />

@@ -5,6 +5,7 @@ import { Calendar, Download, BookOpen, ChevronRight } from "lucide-react";
 import Button from "../common/Button";
 import { useLanguage } from "@/context/LanguageContext";
 import { issueTranslations } from "@/data/translations";
+import { EASE_OUT, VIEWPORT_ONCE, staggerContainer, staggerItem } from "@/lib/motion";
 
 export default function LatestIssuePreview({ issue }) {
   const { lang } = useLanguage();
@@ -40,10 +41,10 @@ export default function LatestIssuePreview({ issue }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
         {/* Cover Preview (LHS) */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, amount: 0.1 }}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, scale: 0.92, rotate: -2 }}
+          whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+          viewport={VIEWPORT_ONCE}
+          transition={{ duration: 0.7, ease: EASE_OUT }}
           className="lg:col-span-5 flex justify-center"
         >
           <div className="relative aspect-[3/4] w-full max-w-[320px] rounded-xl overflow-hidden shadow-2xl border border-gray-100 group">
@@ -52,7 +53,7 @@ export default function LatestIssuePreview({ issue }) {
               alt={displayTitle}
               fill
               sizes="(max-width: 768px) 320px, 400px"
-              className="object-cover transition-transform duration-500 group-hover:scale-103"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
               priority
             />
             <div className="absolute inset-0 bg-black/10 transition-colors duration-300 group-hover:bg-black/0" />
@@ -60,8 +61,14 @@ export default function LatestIssuePreview({ issue }) {
         </motion.div>
 
         {/* Text/Article List Details (RHS) */}
-        <div className="lg:col-span-7 space-y-6">
-          <div className="space-y-3">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={VIEWPORT_ONCE}
+          variants={staggerContainer(0.12, 0.15)}
+          className="lg:col-span-7 space-y-6"
+        >
+          <motion.div variants={staggerItem({ y: 24, duration: 0.6 })} className="space-y-3">
             <span className="bg-primary/10 text-primary font-sans font-bold text-xs px-3.5 py-1.5 rounded-full uppercase tracking-wider inline-block">
               {t.latestTag}
             </span>
@@ -76,15 +83,18 @@ export default function LatestIssuePreview({ issue }) {
             <h3 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-charcoal leading-normal py-1.5">
               {displayTitle}
             </h3>
-          </div>
+          </motion.div>
 
-          <p className="font-sans text-sm sm:text-base text-charcoal/70 leading-relaxed font-light">
+          <motion.p
+            variants={staggerItem({ y: 22, duration: 0.6 })}
+            className="font-sans text-sm sm:text-base text-charcoal/70 leading-relaxed font-light"
+          >
             {displayDesc}
-          </p>
+          </motion.p>
 
           {/* Issue Highlights */}
           {displayFeatures && displayFeatures.length > 0 && (
-            <div className="space-y-3 pt-2">
+            <motion.div variants={staggerItem({ y: 20, duration: 0.6 })} className="space-y-3 pt-2">
               <h4 className="font-serif text-sm font-bold text-charcoal uppercase tracking-wider border-b border-border-subtle pb-2">
                 {t.highlights}
               </h4>
@@ -96,11 +106,14 @@ export default function LatestIssuePreview({ issue }) {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-border-subtle">
+          <motion.div
+            variants={staggerItem({ y: 20, duration: 0.6 })}
+            className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-border-subtle"
+          >
             <Button
               href={`/issues/${issue.id}`}
               variant="primary"
@@ -116,8 +129,8 @@ export default function LatestIssuePreview({ issue }) {
             >
               <Download className="w-4 h-4 mr-2" /> {t.download}
             </a>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

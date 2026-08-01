@@ -4,6 +4,7 @@ import { Award, Compass, Eye, BookOpen } from "lucide-react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import SectionHeading from "@/components/common/SectionHeading";
 import { useLanguage } from "@/context/LanguageContext";
+import { EASE_OUT, VIEWPORT_ONCE } from "@/lib/motion";
 
 export default function AboutClient({ data }) {
   const { mission, vision, story, timeline } = data;
@@ -64,14 +65,14 @@ export default function AboutClient({ data }) {
   }[lang];
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 26 },
     visible: (i) => ({
       opacity: 1,
       y: 0,
       transition: {
-        delay: i * 0.15,
-        duration: 0.5,
-        ease: "easeOut",
+        delay: i * 0.12,
+        duration: 0.65,
+        ease: EASE_OUT,
       },
     }),
   };
@@ -85,18 +86,24 @@ export default function AboutClient({ data }) {
 
       {/* Grid: Mission, Vision, Story */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-20">
-        {/* Story details (LHS) */}
-        <div className="lg:col-span-7 space-y-6">
-          <h3 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal leading-tight">
-            {t.intro}
-          </h3>
-          <p className="font-sans text-sm sm:text-base text-charcoal/70 leading-relaxed font-light">
-            {t.story}
-          </p>
-          <div className="border-l-4 border-primary pl-4 py-1 italic text-charcoal/80 font-serif text-sm">
-            {t.quote}
-          </div>
+      {/* Story details (LHS) */}
+      <motion.div
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={VIEWPORT_ONCE}
+        transition={{ duration: 0.7, ease: EASE_OUT }}
+        className="lg:col-span-7 space-y-6"
+      >
+        <h3 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal leading-tight">
+          {t.intro}
+        </h3>
+        <p className="font-sans text-sm sm:text-base text-charcoal/70 leading-relaxed font-light">
+          {t.story}
+        </p>
+        <div className="border-l-4 border-primary pl-4 py-1 italic text-charcoal/80 font-serif text-sm">
+          {t.quote}
         </div>
+      </motion.div>
 
         {/* Mission / Vision Cards (RHS) */}
         <div className="lg:col-span-5 space-y-6">
@@ -150,10 +157,10 @@ export default function AboutClient({ data }) {
           {t.timeline.map((item, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -28 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.15 }}
-              transition={{ duration: 0.5, delay: index * 0.15 }}
+              viewport={VIEWPORT_ONCE}
+              transition={{ duration: 0.65, delay: index * 0.1, ease: EASE_OUT }}
               className="relative"
             >
               {/* Timeline dot */}

@@ -586,7 +586,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                               className="absolute right-0 top-0 bottom-0 w-1/2 origin-left z-40"
                               initial={{ rotateY: 0 }}
                               animate={{ rotateY: -180 }}
-                              transition={{ duration: 0.5, ease: "easeInOut" }}
+                              transition={{ duration: 0.55, ease: [0.45, 0, 0.3, 1] }}
                               onAnimationComplete={() => completePageFlip("next")}
                               style={{
                                 transformStyle: "preserve-3d",
@@ -634,7 +634,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                               className="absolute left-0 top-0 bottom-0 w-1/2 origin-right z-40"
                               initial={{ rotateY: 0 }}
                               animate={{ rotateY: 180 }}
-                              transition={{ duration: 0.5, ease: "easeInOut" }}
+                              transition={{ duration: 0.55, ease: [0.45, 0, 0.3, 1] }}
                               onAnimationComplete={() => completePageFlip("prev")}
                               style={{
                                 transformStyle: "preserve-3d",

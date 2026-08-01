@@ -1,7 +1,9 @@
 "use client";
+import { motion } from "framer-motion";
 import Button from "../common/Button";
 import { BookOpen, Archive } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { staggerContainer, staggerItem } from "@/lib/motion";
 
 export default function Hero({ latestIssueId }) {
   const { lang } = useLanguage();
@@ -33,29 +35,49 @@ export default function Hero({ latestIssueId }) {
         {lang === "ta" ? "ஆசிரியர் குறிப்பு" : "EDITORIAL"}
       </div>
 
-      <div className="relative w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 z-10 animate-fade-in">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer(0.14, 0.15)}
+        className="relative w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 z-10"
+      >
         <div className="max-w-3xl space-y-6">
           <div className="space-y-3">
             {/* Lead Tag */}
-            <span className="bg-secondary/25 border border-secondary text-secondary font-sans font-bold text-[10px] tracking-widest uppercase px-3 py-1 rounded inline-block">
+            <motion.span
+              variants={staggerItem({ y: 16, duration: 0.5 })}
+              className="bg-secondary/25 border border-secondary text-secondary font-sans font-bold text-[10px] tracking-widest uppercase px-3 py-1 rounded inline-block"
+            >
               {t.tag}
-            </span>
+            </motion.span>
             
             {/* Article Headline */}
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-white leading-normal tracking-tight py-1.5">
+            <motion.h2
+              variants={staggerItem({ y: 46, duration: 0.85 })}
+              className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-white leading-normal tracking-tight py-1.5"
+            >
               {t.title}
-            </h2>
-            <p className="font-serif italic text-secondary-hover text-base sm:text-lg">
+            </motion.h2>
+            <motion.p
+              variants={staggerItem({ y: 30, duration: 0.7 })}
+              className="font-serif italic text-secondary-hover text-base sm:text-lg"
+            >
               {t.italic}
-            </p>
+            </motion.p>
           </div>
 
-          <p className="text-xs sm:text-sm text-gray-300 font-sans font-light leading-relaxed max-w-2xl">
+          <motion.p
+            variants={staggerItem({ y: 24, duration: 0.7 })}
+            className="text-xs sm:text-sm text-gray-300 font-sans font-light leading-relaxed max-w-2xl"
+          >
             {t.desc}
-          </p>
+          </motion.p>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+          <motion.div
+            variants={staggerItem({ y: 20, duration: 0.6 })}
+            className="flex flex-col sm:flex-row gap-4 pt-2"
+          >
             <Button
               href={`/issues/${latestIssueId}`}
               variant="primary"
@@ -72,9 +94,9 @@ export default function Hero({ latestIssueId }) {
             >
               <Archive className="w-4 h-4" /> {t.archiveBtn}
             </Button>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Ribbon Divider */}
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary" />

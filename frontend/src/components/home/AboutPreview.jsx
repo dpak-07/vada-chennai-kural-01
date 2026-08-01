@@ -4,6 +4,7 @@ import Button from "../common/Button";
 import aboutData from "@/data/about.json";
 import { Award, Eye, Heart } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { EASE_OUT, VIEWPORT_ONCE, staggerContainer, staggerItem } from "@/lib/motion";
 
 export default function AboutPreview() {
   const { lang } = useLanguage();
@@ -32,7 +33,13 @@ export default function AboutPreview() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
       {/* Narrative Preview (LHS) */}
-      <div className="lg:col-span-7 space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: 32 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={VIEWPORT_ONCE}
+        transition={{ duration: 0.7, ease: EASE_OUT }}
+        className="lg:col-span-7 space-y-6"
+      >
         <h3 className="font-serif text-2xl sm:text-3xl font-bold text-charcoal leading-normal py-1.5">
           {t.heading}
         </h3>
@@ -44,21 +51,27 @@ export default function AboutPreview() {
             {t.readMore}
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Structured Core Values Cards (RHS) */}
-      <div className="lg:col-span-5 grid grid-cols-1 gap-6">
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={VIEWPORT_ONCE}
+        variants={staggerContainer(0.16, 0.1)}
+        className="lg:col-span-5 grid grid-cols-1 gap-6"
+      >
         {/* Mission Card */}
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
-          transition={{ duration: 0.5 }}
+          variants={staggerItem({ x: 28, duration: 0.65 })}
           className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow"
         >
-          <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
+          <motion.div
+            whileHover={{ scale: 1.12, rotate: 6, transition: { type: "spring", stiffness: 300, damping: 15 } }}
+            className="p-3 bg-primary/10 rounded-lg text-primary shrink-0"
+          >
             <Heart className="w-5 h-5" />
-          </div>
+          </motion.div>
           <div className="space-y-1">
             <h4 className="font-serif text-sm font-bold text-charcoal">{t.missionTitle}</h4>
             <p className="font-sans text-xs text-charcoal/65 leading-relaxed font-light">
@@ -69,15 +82,15 @@ export default function AboutPreview() {
 
         {/* Vision Card */}
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          variants={staggerItem({ x: 28, duration: 0.65 })}
           className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow"
         >
-          <div className="p-3 bg-secondary/10 rounded-lg text-secondary shrink-0">
+          <motion.div
+            whileHover={{ scale: 1.12, rotate: -6, transition: { type: "spring", stiffness: 300, damping: 15 } }}
+            className="p-3 bg-secondary/10 rounded-lg text-secondary shrink-0"
+          >
             <Eye className="w-5 h-5" />
-          </div>
+          </motion.div>
           <div className="space-y-1">
             <h4 className="font-serif text-sm font-bold text-charcoal">{t.visionTitle}</h4>
             <p className="font-sans text-xs text-charcoal/65 leading-relaxed font-light">
@@ -85,7 +98,7 @@ export default function AboutPreview() {
             </p>
           </div>
         </motion.div>
-      </div>
+      </motion.div>
     </div>
   );
 }

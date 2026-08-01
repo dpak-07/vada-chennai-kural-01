@@ -76,8 +76,8 @@ export default function EditorialClient() {
 
         {/* Editorial Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {localizedTeam.map((member) => (
-            <TeamCard key={member.id} member={member} />
+          {localizedTeam.map((member, i) => (
+            <TeamCard key={member.id} member={member} index={i} />
           ))}
         </div>
       </div>

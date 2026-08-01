@@ -96,7 +96,7 @@ body {
   display: flex;
   width: max-content;
   white-space: nowrap;
-  animation: marqueeScroll 40s linear infinite;
+  animation: marqueeScroll 24s linear infinite;
   transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;

@@ -6,8 +6,9 @@ import { BookOpen, Calendar, Download } from "lucide-react";
 import Button from "../common/Button";
 import { useLanguage } from "@/context/LanguageContext";
 import { issueTranslations } from "@/data/translations";
+import { EASE_OUT, VIEWPORT_ONCE, springLift } from "@/lib/motion";
 
-export default function IssueCard({ issue }) {
+export default function IssueCard({ issue, index = 0 }) {
   const { id, title, month, coverImage, pages, downloadCount } = issue;
   const { lang } = useLanguage();
 
@@ -34,11 +35,11 @@ export default function IssueCard({ issue }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 36 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15, margin: "-50px" }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      whileHover={{ y: -8 }}
+      viewport={VIEWPORT_ONCE}
+      transition={{ duration: 0.65, delay: index * 0.1, ease: EASE_OUT }}
+      whileHover={{ y: -10, transition: springLift(-10) }}
       className="bg-white rounded-xl shadow-md overflow-hidden border border-border-subtle flex flex-col h-full w-full max-w-md mx-auto group"
     >
       {/* Cover Image Container */}
@@ -48,7 +49,7 @@ export default function IssueCard({ issue }) {
           alt={displayTitle}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           priority={false}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">

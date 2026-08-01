@@ -161,14 +161,16 @@ export default function Navbar() {
                   <Link
                     key={link.path}
                     href={link.path}
-                    className={`font-sans text-xs lg:text-sm font-bold uppercase tracking-wider transition-colors duration-200 relative py-1 ${
+                    className={`group font-sans text-xs lg:text-sm font-bold uppercase tracking-wider transition-colors duration-200 relative py-1 ${
                       isActive ? "text-primary" : "text-charcoal/70 hover:text-primary"
                     }`}
                   >
                     {link.name}
-                    {isActive && (
-                      <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary transition-all duration-300" />
-                    )}
+                    <span
+                      className={`absolute bottom-0 left-0 w-full h-0.5 bg-primary origin-left transition-transform duration-300 ease-out group-hover:scale-x-100 ${
+                        isActive ? "scale-x-100" : "scale-x-0"
+                      }`}
+                    />
                   </Link>
                 );
               })}
