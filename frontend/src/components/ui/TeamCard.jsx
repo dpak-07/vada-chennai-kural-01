@@ -13,7 +13,7 @@ export default function TeamCard({ member, index = 0 }) {
       viewport={VIEWPORT_ONCE}
       transition={{ duration: 0.55, delay: index * 0.08, ease: EASE_OUT }}
       whileHover={{ y: -6, transition: springLift(-6) }}
-      className="bg-white rounded-xl overflow-hidden shadow-md border border-border-subtle flex flex-col items-center text-center p-6 w-full max-w-md mx-auto transition-shadow duration-300 hover:shadow-lg"
+      className="bg-white rounded-xl overflow-hidden shadow-md border border-border-subtle flex flex-col items-center text-center p-6 w-full transition-shadow duration-300 hover:shadow-lg"
     >
       {/* Portrait Wrap */}
       <motion.div

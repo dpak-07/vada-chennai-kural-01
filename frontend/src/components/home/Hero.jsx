@@ -5,6 +5,31 @@ import { BookOpen, Archive } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 
+// Background watermark: letters smoothly appear one by one from the start of
+// the word, playing once when the hero loads (no loop).
+function LetterGlow({ text }) {
+  const d = 0.14; // seconds between consecutive letters appearing
+  const f = 0.6; // seconds for a single letter to fade in
+
+  const letters = Array.from(text);
+
+  return (
+    <span className="inline-block">
+      {letters.map((ch, i) => (
+        <motion.span
+          key={i}
+          className="inline-block"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: i * d, duration: f, ease: "easeInOut" }}
+        >
+          {ch === " " ? "\u00A0" : ch}
+        </motion.span>
+      ))}
+    </span>
+  );
+}
+
 export default function Hero({ latestIssueId }) {
   const { lang } = useLanguage();
 
@@ -29,17 +54,38 @@ export default function Hero({ latestIssueId }) {
 
   return (
     <section className="relative bg-charcoal min-h-[60vh] flex items-center justify-center py-16 px-4 overflow-hidden border-b border-border-subtle">
-      {/* Background Graphic */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/15 via-charcoal/95 to-charcoal z-0" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15vw] font-serif font-black text-white/[0.01] tracking-widest uppercase select-none pointer-events-none z-0">
-        {lang === "ta" ? "ஆசிரியர் குறிப்பு" : "EDITORIAL"}
+      {/* Elegant vignette */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#232323_0%,_#1B1B1B_55%,_#141414_100%)] z-0" />
+      {/* Animated brand watermark: letters light up one by one into the full
+          word, then go dark one by one, looping forever. */}
+      <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none z-0">
+        <div
+          className="text-center font-serif font-black uppercase leading-none text-secondary"
+          style={{
+            fontSize: lang === "ta" ? "clamp(3.5rem, 13vw, 11rem)" : "clamp(2.6rem, 8.5vw, 7.5rem)",
+            letterSpacing: lang === "ta" ? "0.14em" : "0.18em",
+          }}
+        >
+          {lang === "ta" ? (
+            <LetterGlow text="வடசென்னை குரல்" />
+          ) : (
+            <>
+              <div className="block">
+                <LetterGlow text="Vadachennai" />
+              </div>
+              <div className="block tracking-[0.42em]">
+                <LetterGlow text="Kural" />
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <motion.div
         initial="hidden"
         animate="visible"
         variants={staggerContainer(0.12, 0.1)}
-        className="relative w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 z-10"
+        className="relative w-full px-4 sm:px-8 lg:px-12 z-10"
       >
         <div className="max-w-3xl space-y-6">
           <div className="space-y-3">
@@ -90,7 +136,7 @@ export default function Hero({ latestIssueId }) {
               href="/issues"
               variant="outline"
               size="md"
-              className="border-white text-white hover:bg-white hover:text-charcoal flex items-center justify-center gap-2 cursor-pointer"
+              className="!bg-white !text-charcoal !border-white hover:!bg-secondary hover:!text-charcoal flex items-center justify-center gap-2 cursor-pointer shadow-lg"
             >
               <Archive className="w-4 h-4" /> {t.archiveBtn}
             </Button>

@@ -3,26 +3,59 @@ import { createContext, useContext, useState, useEffect } from "react";
 
 const LanguageContext = createContext();
 
-export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState("ta");
+const COOKIE_NAME = "lang";
+
+function readSavedLang() {
+  try {
+    const saved = localStorage.getItem(COOKIE_NAME);
+    return saved === "en" || saved === "ta" ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeLangCookie(value) {
+  try {
+    document.cookie = `${COOKIE_NAME}=${value}; path=/; SameSite=Lax; Max-Age=31536000`;
+  } catch {
+    // ignore
+  }
+}
+
+export function LanguageProvider({ children, initialLang = "ta", hasLangCookie = false }) {
+  const [lang, setLang] = useState(() => {
+    if (typeof window === "undefined") {
+      return initialLang;
+    }
+    if (hasLangCookie) {
+      return initialLang;
+    }
+    return readSavedLang() || initialLang;
+  });
 
   useEffect(() => {
-    const saved = localStorage.getItem("lang");
+    if (hasLangCookie) {
+      return;
+    }
+    const saved = readSavedLang();
     if (saved) {
-      setLang(saved);
+      writeLangCookie(saved);
     }
-  }, []);
+  }, [hasLangCookie]);
 
   useEffect(() => {
-    if (typeof document !== "undefined") {
-      document.documentElement.lang = lang;
-    }
+    document.documentElement.lang = lang;
   }, [lang]);
 
   const toggleLanguage = () => {
     const newLang = lang === "ta" ? "en" : "ta";
     setLang(newLang);
-    localStorage.setItem("lang", newLang);
+    try {
+      localStorage.setItem(COOKIE_NAME, newLang);
+    } catch {
+      // ignore
+    }
+    writeLangCookie(newLang);
     // Dispatch a custom event to notify components that might not be in the context tree
     window.dispatchEvent(new Event("languageChange"));
   };

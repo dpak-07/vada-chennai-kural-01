@@ -20,7 +20,7 @@ export default function EditorialClient() {
     en: {
       breadcrumb: "Editorial Board",
       title: "Meet the Editorial Board",
-      subtitle: "MEET THE EDITORIAL BOARD",
+      subtitle: "OUR TEAM",
       description: "Here we introduce our dedicated team of editors, journalists, photographers, and social activists who write and document North Chennai's true history and contemporary events with honesty and artistic beauty."
     }
   }[lang];
@@ -59,7 +59,7 @@ export default function EditorialClient() {
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+      <div className="w-full px-4 sm:px-8 lg:px-12">
         {/* Breadcrumb */}
         <Breadcrumb items={[{ name: t.breadcrumb, path: "/editorial" }]} />
 
@@ -83,7 +83,7 @@ export default function EditorialClient() {
         </motion.div>
 
         {/* Editorial Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {localizedTeam.map((member, i) => (
             <TeamCard key={member.id} member={member} index={i} />
           ))}

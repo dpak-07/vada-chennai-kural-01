@@ -49,7 +49,7 @@ export default function Newsletter() {
       <div className="absolute top-0 right-0 -mr-24 -mt-24 w-80 h-80 rounded-full border-[20px] border-secondary/10 pointer-events-none" />
       <div className="absolute bottom-0 left-0 -ml-24 -mb-24 w-80 h-80 rounded-full border-[20px] border-white/5 pointer-events-none" />
 
-      <div className="relative max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 z-10">
+      <div className="relative w-full flex flex-col md:flex-row items-center justify-between gap-8 z-10">
         <div className="text-left space-y-3 max-w-xl">
           <span className="text-secondary font-sans font-bold text-xs uppercase tracking-wider">
             {t.tag}

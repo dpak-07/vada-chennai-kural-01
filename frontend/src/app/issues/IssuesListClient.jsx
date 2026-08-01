@@ -18,7 +18,7 @@ export default function IssuesListClient({ initialIssues }) {
     ta: {
       breadcrumb: "இதழ்கள்",
       title: "இதழ்கள் காப்பகம்",
-      subtitle: "இதழ்கள் காப்பகம்",
+      subtitle: "அனைத்து வெளியீடுகளும்",
       noIssuesTitle: "இதழ்கள் ஏதும் இல்லை",
       noIssuesText: "தங்கள் தேடலுக்குப் பொருத்தமான இதழ்கள் எதுவும் இல்லை. தயவுசெய்து வேறு வார்த்தைகளை உள்ளிடவும்.",
       prevPage: "முந்தைய பக்கம்",
@@ -27,7 +27,7 @@ export default function IssuesListClient({ initialIssues }) {
     en: {
       breadcrumb: "Issues",
       title: "Magazine Archive",
-      subtitle: "MAGAZINE ARCHIVE",
+      subtitle: "ALL ISSUES",
       noIssuesTitle: "No Issues Found",
       noIssuesText: "No issues match your search criteria. Please try using different keywords.",
       prevPage: "Previous Page",
@@ -58,7 +58,7 @@ export default function IssuesListClient({ initialIssues }) {
   const totalPages = Math.ceil(filteredIssues.length / ITEMS_PER_PAGE);
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-12">
+    <div className="w-full px-4 sm:px-8 lg:px-12 py-12">
       {/* Breadcrumbs */}
       <Breadcrumb items={[{ name: t.breadcrumb, path: "/issues" }]} />
 
@@ -84,10 +84,13 @@ export default function IssuesListClient({ initialIssues }) {
         </div>
       ) : (
         <>
-          {/* Issue Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Masonry grid: cards keep their cover's natural aspect ratio and
+              auto-fill the columns so no empty gaps are left behind. */}
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
             {paginatedIssues.map((issue, i) => (
-              <IssueCard key={issue.id} issue={issue} index={i} />
+              <div key={issue.id} className="mb-6 break-inside-avoid">
+                <IssueCard issue={issue} index={i} />
+              </div>
             ))}
           </div>
 

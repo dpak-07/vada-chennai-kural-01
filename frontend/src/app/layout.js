@@ -1,4 +1,5 @@
 import { Cormorant_Garamond, Plus_Jakarta_Sans, Noto_Sans_Tamil, Noto_Serif_Tamil } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 const cormorantGaramond = Cormorant_Garamond({
@@ -65,14 +66,19 @@ export const metadata = {
 import { LanguageProvider } from "@/context/LanguageContext";
 import GlobalLayoutWrapper from "@/components/common/GlobalLayoutWrapper";
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const cookieStore = await cookies();
+  const langCookie = cookieStore.get("lang");
+  const initialLang = langCookie?.value === "en" ? "en" : "ta";
+  const hasLangCookie = Boolean(langCookie);
+
   return (
     <html
-      lang="ta"
+      lang={initialLang}
       className={`${cormorantGaramond.variable} ${plusJakartaSans.variable} ${notoSansTamil.variable} ${notoSerifTamil.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-canvas text-charcoal font-sans selection:bg-primary selection:text-white">
-        <LanguageProvider>
+        <LanguageProvider initialLang={initialLang} hasLangCookie={hasLangCookie}>
           <GlobalLayoutWrapper>
             {children}
           </GlobalLayoutWrapper>

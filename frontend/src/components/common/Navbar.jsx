@@ -7,9 +7,20 @@ import { Menu, X, Calendar, BookOpen, Languages, ShieldCheck } from "lucide-reac
 import Button from "./Button";
 import { useLanguage } from "@/context/LanguageContext";
 
+// Split into safe display units. For Tamil, use grapheme clusters so combining
+// vowel marks stay attached to their base consonant (avoids dotted-circle artifacts).
+const segmentLetters = (str, isTamil) => {
+  if (typeof Intl !== "undefined" && Intl.Segmenter) {
+    const segmenter = new Intl.Segmenter(isTamil ? "ta" : "en", { granularity: "grapheme" });
+    return Array.from(segmenter.segment(str), (s) => s.segment);
+  }
+  return isTamil ? [str] : Array.from(str);
+};
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [dateStr, setDateStr] = useState("");
   const pathname = usePathname();
   const { lang, toggleLanguage } = useLanguage();
@@ -22,12 +33,21 @@ export default function Navbar() {
       ticking = true;
       window.requestAnimationFrame(() => {
         const y = window.scrollY;
-        setScrolled(prev => (y > 60 ? true : y < 30 ? false : prev));
+        setScrolled(prev => (y > 150 ? true : y < 90 ? false : prev));
         ticking = false;
       });
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Detect mobile viewport (masthead is hidden on mobile, so the logo stays visible)
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
   }, []);
 
   // Set Localized Date
@@ -48,7 +68,7 @@ export default function Navbar() {
     ta: {
       slogan: "பகுத்தறிவும், மனிதநேயமும் வடசென்னையின் குரலும்",
       logoTitle: "வடசென்னை குரல்",
-      logoSub: "VADACHENNAI KURAL TAMIL DIGITAL MAGAZINE",
+      logoSub: "தமிழ் டிஜிட்டல் இதழ்",
       digitalEdition: "டிஜிட்டல் பதிப்பு",
       login: "உள்நுழைக",
       home: "முகப்பு",
@@ -75,6 +95,13 @@ export default function Navbar() {
     }
   }[lang];
 
+  // Letter-by-letter reveal config for the scroll logo
+  // (smaller step = faster reveal; English has longer strings, so it gets a quicker step)
+  const LETTER_STEP = lang === "ta" ? 0.02 : 0.012;
+  const titleChars = segmentLetters(t.logoTitle, lang === "ta");
+  const subChars = segmentLetters(t.logoSub, lang === "ta");
+  const logoVisible = isMobile || scrolled;
+
   const navLinks = [
     { name: t.home, path: "/" },
     { name: t.issues, path: "/issues" },
@@ -89,7 +116,7 @@ export default function Navbar() {
       <div className="hidden md:block">
         {/* 1. Thin top date strip (Newspaper sub-bar style) */}
         <div className="bg-primary text-white py-1.5 border-b border-secondary/30">
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between text-[10px] font-sans font-bold tracking-wider uppercase">
+          <div className="w-full px-4 sm:px-8 lg:px-12 flex items-center justify-between text-[10px] font-sans font-bold tracking-wider uppercase">
             <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-secondary" /> {dateStr}</span>
             <span className="font-serif italic text-secondary-hover tracking-normal font-semibold normal-case text-xs">{t.slogan}</span>
             <span className="flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-secondary" /> {t.digitalEdition}</span>
@@ -98,7 +125,7 @@ export default function Navbar() {
 
         {/* 2. GRAND VINTAGE MASTHEAD LOGO */}
         <div className="bg-white py-8 border-b-4 border-double border-primary/25">
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between">
+          <div className="w-full px-4 sm:px-8 lg:px-12 flex items-center justify-between">
             {/* Left Vignette Illustration (Newspaper stamp style) */}
             <div className="w-16 h-16 rounded-full border-2 border-primary/20 flex flex-col items-center justify-center text-primary text-[8px] font-bold text-center shrink-0">
               <span>ESTD</span>
@@ -132,26 +159,65 @@ export default function Navbar() {
             : "bg-white border-b border-border-subtle"
         }`}
       >
-        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+        <div className="w-full px-4 sm:px-8 lg:px-12">
           <div className="flex items-center justify-between gap-4">
             
-            {/* Left Logo (Always visible for smooth header feel) */}
-            <Link 
-              href="/" 
-              className="flex items-center space-x-2 group shrink-0"
-            >
-              <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary flex items-center justify-center text-secondary font-serif text-sm sm:text-base font-bold shadow-sm shrink-0">
-                வ
-              </span>
-              <div className="flex flex-col min-w-0">
-                <span className="font-serif text-base sm:text-xl font-bold tracking-tight text-primary truncate">
-                  {t.logoTitle}
-                </span>
-                <span className="font-sans text-[7px] sm:text-[8px] tracking-widest text-secondary font-bold uppercase -mt-1 truncate">
-                  {t.logoSub}
-                </span>
-              </div>
-            </Link>
+            {/* Left Logo (reveals letter by letter on scroll) */}
+            <div className="shrink-0">
+              <Link 
+                href="/" 
+                className="flex items-center space-x-2 group shrink-0"
+              >
+                <motion.span
+                  initial={false}
+                  animate={{ opacity: logoVisible ? 1 : 0, x: logoVisible ? 0 : -12 }}
+                  transition={{ duration: 0.15, ease: "easeOut", delay: 0.02 }}
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary flex items-center justify-center text-secondary font-serif text-sm sm:text-base font-bold shadow-sm shrink-0"
+                >
+                  வ
+                </motion.span>
+                <div key={lang} className="flex flex-col min-w-0">
+                  <span className="font-serif text-base sm:text-xl font-bold tracking-tight text-primary truncate">
+                    {titleChars.map((ch, i) => (
+                      <motion.span
+                        key={i}
+                        initial={false}
+                        animate={{ opacity: logoVisible ? 1 : 0, x: logoVisible ? 0 : -10 }}
+                        transition={{
+                          duration: 0.15,
+                          ease: "easeOut",
+                          delay: logoVisible
+                            ? 0.07 + i * LETTER_STEP
+                            : 0.07 + (titleChars.length - 1 - i) * LETTER_STEP,
+                        }}
+                        className="inline-block"
+                      >
+                        {ch === " " ? "\u00A0" : ch}
+                      </motion.span>
+                    ))}
+                  </span>
+                  <span className="font-sans text-[7px] sm:text-[8px] tracking-widest text-secondary font-bold uppercase -mt-1 truncate">
+                    {subChars.map((ch, i) => (
+                      <motion.span
+                        key={i}
+                        initial={false}
+                        animate={{ opacity: logoVisible ? 1 : 0, x: logoVisible ? 0 : -10 }}
+                        transition={{
+                          duration: 0.15,
+                          ease: "easeOut",
+                          delay: logoVisible
+                            ? 0.07 + i * LETTER_STEP
+                            : 0.07 + (subChars.length - 1 - i) * LETTER_STEP,
+                        }}
+                        className="inline-block"
+                      >
+                        {ch === " " ? "\u00A0" : ch}
+                      </motion.span>
+                    ))}
+                  </span>
+                </div>
+              </Link>
+            </div>
 
             {/* Navigation links center */}
             <nav className="hidden md:flex items-center justify-center space-x-8 lg:space-x-10">

@@ -22,26 +22,26 @@ export default function Home() {
       thoughtQuote: "“மனிதனுக்கு அழகு அறிவே தவிர ஆடம்பரம் அல்ல! தன்மானமே மனிதனுக்கு உயிர்; பகுத்தறிவே மனிதனின் ஆயுதம்.” — தந்தை பெரியார்",
       thoughtBrand: "வடசென்னை குரல் • தினசரி சிந்தனை",
       latestHeading: "புதிய இதழ் வெளியீடு",
-      latestSub: "புதிய வெளியீடு",
+      latestSub: "சிறப்பு வெளியீடு",
       recentHeading: "சமீபத்திய இதழ்கள்",
-      recentSub: "சமீபத்திய இதழ்கள்",
+      recentSub: "காப்பகத்திலிருந்து",
       aboutHeading: "எங்கள் இதழின் குரல்",
       aboutSub: "எங்களது பார்வை",
       editorialHeading: "ஆசிரியர்க்குழு",
-      editorialSub: "ஆசிரியர்க்குழு"
+      editorialSub: "எங்கள் குழு"
     },
     en: {
       thoughtTag: "Thought of the Day",
       thoughtQuote: "\"Beauty of a man lies in his knowledge and wisdom, not in luxury. Self-respect is life; reason is his weapon.\" — Thanthai Periyar",
       thoughtBrand: "Vadachennai Kural • Daily Thought",
       latestHeading: "Latest Release",
-      latestSub: "LATEST RELEASE",
+      latestSub: "FEATURED RELEASE",
       recentHeading: "Recent Issues",
-      recentSub: "RECENT ISSUES",
+      recentSub: "FROM THE ARCHIVE",
       aboutHeading: "Our Vision",
-      aboutSub: "ABOUT OUR VISION",
+      aboutSub: "ABOUT US",
       editorialHeading: "Editorial Board",
-      editorialSub: "EDITORIAL BOARD"
+      editorialSub: "MEET THE TEAM"
     }
   }[lang];
 
@@ -54,7 +54,7 @@ export default function Home() {
     <>
       {/* Newspaper Scrolling Ticker (Viduthalai style) */}
       <div className="bg-amber-400 text-charcoal py-2 border-b border-primary/20 overflow-hidden font-sans font-bold text-xs uppercase tracking-wider select-none">
-        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex items-center">
+        <div className="w-full px-4 sm:px-8 lg:px-12 flex items-center">
           <span className="bg-primary text-white text-[9px] font-sans font-black px-2.5 py-1 rounded mr-3 shrink-0 uppercase tracking-widest">
             {lang === "ta" ? "முக்கிய செய்திகள்" : "Breaking News"}
           </span>
@@ -73,7 +73,7 @@ export default function Home() {
 
         {/* Thought of the Day Ribbon */}
         <section className="bg-secondary/10 py-4 border-b border-secondary/20">
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4">
             <span className="bg-primary text-white text-[10px] font-sans font-bold px-3 py-1.5 rounded uppercase tracking-wider shrink-0">
               {t.thoughtTag}
             </span>
@@ -88,7 +88,7 @@ export default function Home() {
 
         {/* Latest Issue Spotlight */}
         <section className="py-20 bg-canvas">
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+          <div className="w-full px-4 sm:px-8 lg:px-12">
             <SectionHeading
               title={t.latestHeading}
               subtitle={t.latestSub}
@@ -99,11 +99,10 @@ export default function Home() {
 
         {/* Recent Issues Archive Grid */}
         <section className="py-20 bg-white border-y border-border-subtle">
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+          <div className="w-full px-4 sm:px-8 lg:px-12">
             <SectionHeading
               title={t.recentHeading}
               subtitle={t.recentSub}
-              centered
             />
             <RecentIssuesGrid issues={recentIssues} />
           </div>
@@ -111,7 +110,7 @@ export default function Home() {
 
         {/* About Preview Section */}
         <section className="py-20 bg-canvas">
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+          <div className="w-full px-4 sm:px-8 lg:px-12">
             <SectionHeading
               title={t.aboutHeading}
               subtitle={t.aboutSub}
@@ -122,11 +121,10 @@ export default function Home() {
 
         {/* Editorial Board Showcase */}
         <section className="py-20 bg-white border-t border-border-subtle">
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+          <div className="w-full px-4 sm:px-8 lg:px-12">
             <SectionHeading
               title={t.editorialHeading}
               subtitle={t.editorialSub}
-              centered
             />
             <EditorialPreview />
           </div>
@@ -137,7 +135,7 @@ export default function Home() {
 
         {/* Newsletter Section */}
         <section className="py-20 bg-canvas">
-          <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+          <div className="w-full px-4 sm:px-8 lg:px-12">
             <Newsletter />
           </div>
         </section>

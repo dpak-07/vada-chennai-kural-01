@@ -38,7 +38,7 @@ export default function ContactClient() {
 
   return (
     <div className="py-12">
-      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+      <div className="w-full px-4 sm:px-8 lg:px-12">
         {/* Breadcrumbs */}
         <Breadcrumb items={[{ name: t.breadcrumb, path: "/contact" }]} />
 

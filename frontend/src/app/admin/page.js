@@ -229,7 +229,6 @@ export default function AdminDashboard() {
         pdfUrl: formData.pdfUrl,
         isLatest: false,
         pages: parseInt(formData.pages),
-        downloadCount: 0,
         features: featuresTaList,
         featuresEn: featuresEnList
       };
@@ -477,7 +476,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <div className="p-4 sm:p-8 w-full max-w-[1440px] mx-auto space-y-6">
+        <div className="p-4 sm:p-8 w-full space-y-6">
           {/* TAB 1: OVERVIEW DASHBOARD */}
           {activeTab === "dashboard" && (
             <>

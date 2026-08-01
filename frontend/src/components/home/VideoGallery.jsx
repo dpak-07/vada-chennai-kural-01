@@ -52,7 +52,7 @@ export default function VideoGallery() {
 
   return (
     <section className="py-20 bg-white border-t border-border-subtle">
-      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+      <div className="w-full px-4 sm:px-8 lg:px-12">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-12 gap-4">
           <SectionHeading
             title={t.heading}
