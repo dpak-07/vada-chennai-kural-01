@@ -303,7 +303,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
           {/* Share Buttons */}
           <div className="bg-white rounded-xl border border-border-subtle p-5 space-y-4">
             <h4 className="font-serif text-sm font-bold text-charcoal flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-primary animate-pulse" /> {t.share}
+              <Share2 className="w-4 h-4 text-primary" /> {t.share}
             </h4>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <a
@@ -524,20 +524,23 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                         isMobile ? "max-w-[280px] aspect-[0.7/1]" : "max-w-2xl aspect-[1.4/1] bg-black/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] border border-white/5"
                       }`}
                       style={{ 
-                        transform: `scale(${zoom})`,
-                        perspective: isMobile ? undefined : "2000px"
+                        transform: `scale(${zoom}) translateZ(0)`,
+                        WebkitTransform: `scale(${zoom}) translateZ(0)`,
+                        perspective: isMobile ? undefined : "2000px",
+                        willChange: "transform"
                       }}
                     >
                       {isMobile ? (
                         /* Mobile View: Render active single page directly to local canvas */
                         <div className="w-full h-full bg-white rounded-lg shadow-2xl border border-white/5 overflow-hidden">
-                          <AnimatePresence mode="wait">
+                          <AnimatePresence mode="wait" initial={false}>
                             <motion.img 
                               key={`page-${flipPage}`}
-                              initial={{ x: isFlipping === "next" ? 120 : -120, opacity: 0 }}
+                              initial={{ x: isFlipping === "next" ? 80 : -80, opacity: 0 }}
                               animate={{ x: 0, opacity: 1 }}
-                              exit={{ x: isFlipping === "next" ? -120 : 120, opacity: 0 }}
-                              transition={{ duration: 0.3 }}
+                              exit={{ x: isFlipping === "next" ? -80 : 80, opacity: 0 }}
+                              transition={{ duration: 0.2, ease: "easeInOut" }}
+                              style={{ willChange: "transform", transform: "translateZ(0)" }}
                               src={getPageUrl(flipPage)}
                               className="w-full h-full object-contain"
                               alt={`Page ${flipPage}`}
@@ -552,7 +555,8 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                           <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-8 bg-gradient-to-r from-black/30 via-transparent to-black/30 z-20 pointer-events-none" />
 
                           {/* LAYER 1: STATIC LEFT UNDERLAY PAGE */}
-                          <div className="absolute left-0 top-0 bottom-0 w-1/2 bg-white rounded-l-lg border-r border-black/25 overflow-hidden shadow-inner">
+                          <div className="absolute left-0 top-0 bottom-0 w-1/2 bg-white rounded-l-lg border-r border-black/25 overflow-hidden shadow-inner"
+                            style={{ transform: "translateZ(0)", willChange: "transform" }}>
                             {getPageUrl(isFlipping === "prev" ? flipPage - 2 : flipPage) ? (
                               <img src={getPageUrl(isFlipping === "prev" ? flipPage - 2 : flipPage)} className="w-full h-full object-contain" alt="" />
                             ) : (
@@ -565,7 +569,8 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                           </div>
 
                           {/* LAYER 2: STATIC RIGHT UNDERLAY PAGE */}
-                          <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-white rounded-r-lg border-l border-black/25 overflow-hidden shadow-inner">
+                          <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-white rounded-r-lg border-l border-black/25 overflow-hidden shadow-inner"
+                            style={{ transform: "translateZ(0)", willChange: "transform" }}>
                             {getPageUrl(isFlipping === "next" ? flipPage + 3 : flipPage + 1) ? (
                               <img src={getPageUrl(isFlipping === "next" ? flipPage + 3 : flipPage + 1)} className="w-full h-full object-contain" alt="" />
                             ) : (
@@ -584,6 +589,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                               style={{
                                 transformStyle: "preserve-3d",
                                 WebkitTransformStyle: "preserve-3d",
+                                willChange: "transform",
                                 animation: "flipNextPage 0.7s forwards",
                                 WebkitAnimation: "flipNextPage 0.7s forwards"
                               }}
@@ -629,6 +635,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                               style={{
                                 transformStyle: "preserve-3d",
                                 WebkitTransformStyle: "preserve-3d",
+                                willChange: "transform",
                                 animation: "flipPrevPage 0.7s forwards",
                                 WebkitAnimation: "flipPrevPage 0.7s forwards"
                               }}
@@ -758,7 +765,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
             ) : (
               /* Standard PDF View */
               <div className="w-full bg-[#1e1e1e] rounded-xl overflow-hidden border border-border-subtle p-8 flex flex-col items-center justify-center text-center text-white space-y-6 min-h-[500px]">
-                <FileText className="w-16 h-16 text-primary animate-bounce" />
+                <FileText className="w-16 h-16 text-primary" />
                 <div className="space-y-2">
                   <h4 className="font-serif text-base font-bold">{t.pdfReaderTitle}</h4>
                   <p className="text-[11px] text-white/60 font-light leading-relaxed">

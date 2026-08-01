@@ -36,7 +36,7 @@ export default function IssueCard({ issue }) {
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once: true, amount: 0.15, margin: "-50px" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       whileHover={{ y: -8 }}
       className="bg-white rounded-xl shadow-md overflow-hidden border border-border-subtle flex flex-col h-full w-full max-w-md mx-auto group"

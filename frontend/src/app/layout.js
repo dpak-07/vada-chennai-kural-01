@@ -1,4 +1,4 @@
-import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
+import { Cormorant_Garamond, Plus_Jakarta_Sans, Noto_Sans_Tamil, Noto_Serif_Tamil } from "next/font/google";
 import "./globals.css";
 
 const cormorantGaramond = Cormorant_Garamond({
@@ -12,6 +12,16 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans-jakarta",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const notoSansTamil = Noto_Sans_Tamil({
+  variable: "--font-sans-tamil",
+  subsets: ["tamil"],
+});
+
+const notoSerifTamil = Noto_Serif_Tamil({
+  variable: "--font-serif-tamil",
+  subsets: ["tamil"],
 });
 
 export const metadata = {
@@ -59,7 +69,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="ta"
-      className={`${cormorantGaramond.variable} ${plusJakartaSans.variable} h-full antialiased`}
+      className={`${cormorantGaramond.variable} ${plusJakartaSans.variable} ${notoSansTamil.variable} ${notoSerifTamil.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-canvas text-charcoal font-sans selection:bg-primary selection:text-white">
         <LanguageProvider>

@@ -9,7 +9,7 @@ export default function TeamCard({ member }) {
     <motion.div
       initial={{ opacity: 0, y: 25 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       whileHover={{ y: -5 }}
       className="bg-white rounded-xl overflow-hidden shadow-md border border-border-subtle flex flex-col items-center text-center p-6 w-full max-w-md mx-auto transition-all duration-300 hover:shadow-lg"

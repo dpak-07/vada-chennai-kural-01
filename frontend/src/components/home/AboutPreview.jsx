@@ -52,7 +52,7 @@ export default function AboutPreview() {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.15 }}
           transition={{ duration: 0.5 }}
           className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow"
         >
@@ -71,7 +71,7 @@ export default function AboutPreview() {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.15 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow"
         >

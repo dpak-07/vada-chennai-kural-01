@@ -152,13 +152,13 @@ export default function AboutClient({ data }) {
               key={index}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.5, delay: index * 0.15 }}
               className="relative"
             >
-              {/* Pulse Indicator dot */}
+              {/* Timeline dot */}
               <span className="absolute -left-[31px] sm:-left-[47px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white border-2 border-primary">
-                <span className="h-1.5 w-1.5 rounded-full bg-secondary animate-ping" />
+                <span className="h-1.5 w-1.5 rounded-full bg-secondary" />
               </span>
 
               <div className="bg-white rounded-xl border border-border-subtle p-6 shadow-sm hover:shadow-md transition-shadow space-y-2">

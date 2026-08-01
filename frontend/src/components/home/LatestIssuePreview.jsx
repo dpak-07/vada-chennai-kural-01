@@ -42,7 +42,7 @@ export default function LatestIssuePreview({ issue }) {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.1 }}
           transition={{ duration: 0.6 }}
           className="lg:col-span-5 flex justify-center"
         >

@@ -45,20 +45,25 @@ export default function Home() {
     }
   }[lang];
 
+  const tickerItems = (lang === "ta"
+    ? "வடசென்னை குரல் புதிய இதழ் வெளியீடு! • வடசென்னையின் ஆதி இசை மரபான கானா வரலாறு ஆவணப்படுத்தப்பட்டுள்ளது! • மெட்ராஸ் குத்துச்சண்டை: சார்பட்டா பரம்பரையின் நிஜக் கதையை வாசிக்கவும்! • எண்ணூர் கழிமுகச் சூழலியல் பற்றிய மீனவர்களின் நேர்காணல்!"
+    : "Vadachennai Kural New Issue Released! • The Gana Music Heritage of North Chennai documented! • Madras Boxing: Read the real story of Sarbhatta Paramparai! • Ennore estuary ecology interview with local fishermen!"
+  );
+
   return (
     <>
-      {/* Newspaper Scrolling Marquee Ticker (Viduthalai style) */}
+      {/* Newspaper Scrolling Ticker (Viduthalai style) */}
       <div className="bg-amber-400 text-charcoal py-2 border-b border-primary/20 overflow-hidden font-sans font-bold text-xs uppercase tracking-wider select-none">
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex items-center">
           <span className="bg-primary text-white text-[9px] font-sans font-black px-2.5 py-1 rounded mr-3 shrink-0 uppercase tracking-widest">
             {lang === "ta" ? "முக்கிய செய்திகள்" : "Breaking News"}
           </span>
-          <marquee className="cursor-pointer font-sans font-semibold" scrollamount="4">
-            {lang === "ta" 
-              ? "வடசென்னை குரல் புதிய இதழ் வெளியீடு! • வடசென்னையின் ஆதி இசை மரபான கானா வரலாறு ஆவணப்படுத்தப்பட்டுள்ளது! • மெட்ராஸ் குத்துச்சண்டை: சார்பட்டா பரம்பரையின் நிஜக் கதையை வாசிக்கவும்! • எண்ணூர் கழிமுகச் சூழலியல் பற்றிய மீனவர்களின் நேர்காணல்!"
-              : "Vadachennai Kural New Issue Released! • The Gana Music Heritage of North Chennai documented! • Madras Boxing: Read the real story of Sarbhatta Paramparai! • Ennore estuary ecology interview with local fishermen!"
-            }
-          </marquee>
+          <div className="relative flex-1 overflow-hidden" aria-hidden="true">
+            <div className="animate-marquee">
+              <span className="pr-12">{tickerItems}</span>
+              <span className="pr-12">{tickerItems}</span>
+            </div>
+          </div>
         </div>
       </div>
 
