@@ -129,7 +129,7 @@ export default function Navbar() {
       <header
         className={`sticky top-0 z-50 w-full transition-all duration-300 ${
           scrolled
-            ? "bg-white/95 backdrop-blur-md shadow-md py-3.5 border-b border-primary/20"
+            ? "bg-white shadow-md py-3.5 border-b border-primary/20"
             : "bg-white py-4 border-b border-border-subtle"
         }`}
       >

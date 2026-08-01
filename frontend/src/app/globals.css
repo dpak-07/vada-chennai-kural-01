@@ -22,6 +22,11 @@
 }
 
 /* Custom Base Styles */
+html,
+body {
+  overflow-x: hidden;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
@@ -92,6 +97,12 @@ body {
   animation: marqueeScroll 40s linear infinite;
   will-change: transform;
   transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.animate-marquee > span {
+  flex-shrink: 0;
 }
 
 .animate-marquee:hover {

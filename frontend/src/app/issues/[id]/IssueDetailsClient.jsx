@@ -30,6 +30,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
   const [loadingPdf, setLoadingPdf] = useState(true);
   const [isFlipping, setIsFlipping] = useState(null); // 'next', 'prev', or null
   const [isMobile, setIsMobile] = useState(false);
+  const [pageAspect, setPageAspect] = useState(0.707);
   const { lang } = useLanguage();
 
   // Retrieve translation for dynamic issue items
@@ -106,6 +107,8 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
           
           canvas.height = viewport.height;
           canvas.width = viewport.width;
+          
+          if (i === 1) setPageAspect(viewport.width / viewport.height);
           
           await page.render({ canvasContext: context, viewport }).promise;
           
@@ -228,23 +231,26 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
     }
   }[lang];
 
+  const completePageFlip = (dir) => {
+    if (dir === "next") {
+      setFlipPage(prev => Math.min(prev + 2, totalPages - 1));
+    } else {
+      setFlipPage(prev => Math.max(prev - 2, 1));
+    }
+    setIsFlipping(null);
+  };
+
   const handleNextPage = () => {
     if (isFlipping || loadingPdf) return;
     if (isMobile) {
       if (flipPage < totalPages) {
         setIsFlipping("next");
         setFlipPage(prev => prev + 1);
-        setTimeout(() => setIsFlipping(null), 300);
+        setTimeout(() => setIsFlipping(null), 220);
       }
     } else {
       if (flipPage < totalPages - 1) {
         setIsFlipping("next");
-        setTimeout(() => {
-          setFlipPage(prev => prev + 2);
-          setTimeout(() => {
-            setIsFlipping(null);
-          }, 80); // 80ms buffer allows browser paint of static canvases before unmounting sheet
-        }, 700);
       }
     }
   };
@@ -255,17 +261,11 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
       if (flipPage > 1) {
         setIsFlipping("prev");
         setFlipPage(prev => prev - 1);
-        setTimeout(() => setIsFlipping(null), 300);
+        setTimeout(() => setIsFlipping(null), 220);
       }
     } else {
       if (flipPage > 1) {
         setIsFlipping("prev");
-        setTimeout(() => {
-          setFlipPage(prev => prev - 2);
-          setTimeout(() => {
-            setIsFlipping(null);
-          }, 80);
-        }, 700);
       }
     }
   };
@@ -521,29 +521,29 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                     /* The 3D Book Component wrapper */
                     <div 
                       className={`relative flex items-center justify-center w-full transition-transform duration-300 ${
-                        isMobile ? "max-w-[280px] aspect-[0.7/1]" : "max-w-2xl aspect-[1.4/1] bg-black/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] border border-white/5"
+                        isMobile ? "max-w-[280px]" : "max-w-2xl bg-black/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] border border-white/5"
                       }`}
                       style={{ 
                         transform: `scale(${zoom}) translateZ(0)`,
                         WebkitTransform: `scale(${zoom}) translateZ(0)`,
                         perspective: isMobile ? undefined : "2000px",
-                        willChange: "transform"
+                        aspectRatio: isMobile ? String(pageAspect) : String(2 * pageAspect)
                       }}
                     >
                       {isMobile ? (
                         /* Mobile View: Render active single page directly to local canvas */
-                        <div className="w-full h-full bg-white rounded-lg shadow-2xl border border-white/5 overflow-hidden">
-                          <AnimatePresence mode="wait" initial={false}>
+                        <div className="relative w-full h-full bg-white rounded-lg shadow-2xl border border-white/5 overflow-hidden">
+                          <AnimatePresence initial={false}>
                             <motion.img 
                               key={`page-${flipPage}`}
-                              initial={{ x: isFlipping === "next" ? 80 : -80, opacity: 0 }}
-                              animate={{ x: 0, opacity: 1 }}
-                              exit={{ x: isFlipping === "next" ? -80 : 80, opacity: 0 }}
-                              transition={{ duration: 0.2, ease: "easeInOut" }}
-                              style={{ willChange: "transform", transform: "translateZ(0)" }}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.2, ease: "easeOut" }}
                               src={getPageUrl(flipPage)}
-                              className="w-full h-full object-contain"
+                              className="absolute inset-0 w-full h-full object-contain"
                               alt={`Page ${flipPage}`}
+                              draggable={false}
                             />
                           </AnimatePresence>
                         </div>
@@ -584,19 +584,21 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
 
                           {/* LAYER 3: DYNAMIC 3D ANIMATED FLIPPING SHEET (Next turning) */}
                           {isFlipping === "next" && (
-                            <div 
+                            <motion.div 
                               className="absolute right-0 top-0 bottom-0 w-1/2 origin-left z-40"
+                              initial={{ rotateY: 0 }}
+                              animate={{ rotateY: -180 }}
+                              transition={{ duration: 0.5, ease: "easeInOut" }}
+                              onAnimationComplete={() => completePageFlip("next")}
                               style={{
                                 transformStyle: "preserve-3d",
                                 WebkitTransformStyle: "preserve-3d",
-                                willChange: "transform",
-                                animation: "flipNextPage 0.7s forwards",
-                                WebkitAnimation: "flipNextPage 0.7s forwards"
+                                willChange: "transform"
                               }}
                             >
                               {/* Front Side */}
                               <div 
-                                className="absolute inset-0 bg-white border-l border-black/25 overflow-hidden backface-hidden"
+                                className="absolute inset-0 bg-white border-l border-black/25 overflow-hidden"
                                 style={{ 
                                   backfaceVisibility: "hidden",
                                   WebkitBackfaceVisibility: "hidden"
@@ -625,24 +627,26 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                                 <div className="absolute top-0 bottom-0 right-0 w-6 bg-gradient-to-l from-black/25 to-transparent pointer-events-none" />
                                 <span className="absolute bottom-2 left-3 text-[9px] text-charcoal/40 font-bold font-sans">{flipPage + 2}</span>
                               </div>
-                            </div>
+                            </motion.div>
                           )}
 
                           {/* DYNAMIC 3D ANIMATED FLIPPING SHEET (Prev turning) */}
                           {isFlipping === "prev" && (
-                            <div 
+                            <motion.div 
                               className="absolute left-0 top-0 bottom-0 w-1/2 origin-right z-40"
+                              initial={{ rotateY: 0 }}
+                              animate={{ rotateY: 180 }}
+                              transition={{ duration: 0.5, ease: "easeInOut" }}
+                              onAnimationComplete={() => completePageFlip("prev")}
                               style={{
                                 transformStyle: "preserve-3d",
                                 WebkitTransformStyle: "preserve-3d",
-                                willChange: "transform",
-                                animation: "flipPrevPage 0.7s forwards",
-                                WebkitAnimation: "flipPrevPage 0.7s forwards"
+                                willChange: "transform"
                               }}
                             >
                               {/* Front Side */}
                               <div 
-                                className="absolute inset-0 bg-white border-r border-black/25 overflow-hidden backface-hidden"
+                                className="absolute inset-0 bg-white border-r border-black/25 overflow-hidden"
                                 style={{ 
                                   backfaceVisibility: "hidden",
                                   WebkitBackfaceVisibility: "hidden"
@@ -671,7 +675,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
                                 <div className="absolute top-0 bottom-0 left-0 w-6 bg-gradient-to-r from-black/25 to-transparent pointer-events-none" />
                                 <span className="absolute bottom-2 right-3 text-[9px] text-charcoal/40 font-bold font-sans">{flipPage - 1}</span>
                               </div>
-                            </div>
+                            </motion.div>
                           )}
                         </div>
                       )}
@@ -731,21 +735,11 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
 
                 {/* Inline CSS styling inject */}
                 <style jsx global>{`
-                  @keyframes flipNextPage {
-                    0% { transform: rotateY(0deg); -webkit-transform: rotateY(0deg); }
-                    100% { transform: rotateY(-180deg); -webkit-transform: rotateY(-180deg); }
-                  }
-                  @-webkit-keyframes flipNextPage {
-                    0% { -webkit-transform: rotateY(0deg); }
-                    100% { -webkit-transform: rotateY(-180deg); }
-                  }
-                  @keyframes flipPrevPage {
-                    0% { transform: rotateY(0deg); -webkit-transform: rotateY(0deg); }
-                    100% { transform: rotateY(180deg); -webkit-transform: rotateY(180deg); }
-                  }
-                  @-webkit-keyframes flipPrevPage {
-                    0% { -webkit-transform: rotateY(0deg); }
-                    100% { -webkit-transform: rotateY(180deg); }
+                  img {
+                    -webkit-user-drag: none;
+                    -khtml-user-drag: none;
+                    user-drag: none;
+                    user-select: none;
                   }
                   .perspective-2000 { 
                     perspective: 2000px; 
