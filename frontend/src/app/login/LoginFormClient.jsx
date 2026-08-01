@@ -1,0 +1,179 @@
+"use client";
+import { useState } from "react";
+import Link from "next/link";
+import { Shield, Eye, EyeOff, Lock, User, AlertCircle, ArrowLeft } from "lucide-react";
+import Button from "@/components/common/Button";
+
+export default function LoginFormClient() {
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    rememberMe: false,
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!formData.username.trim() || !formData.password.trim()) {
+      setError("பயனர் பெயர் மற்றும் கடவுச்சொல்லை உள்ளிடவும் (Please fill all fields)");
+      return;
+    }
+
+    setLoading(true);
+    // Simulate premium login validation
+    setTimeout(() => {
+      setLoading(false);
+      // Let's mock a success if they type anything
+      setSuccess(true);
+    }, 1500);
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-canvas relative overflow-hidden px-4">
+      {/* Abstract Design Elements */}
+      <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-secondary/5 blur-3xl pointer-events-none" />
+
+      <div className="w-full max-w-md space-y-8 relative z-10">
+        {/* Back Link */}
+        <div className="text-left">
+          <Link href="/" className="inline-flex items-center text-xs font-semibold text-charcoal/50 hover:text-primary transition gap-1">
+            <ArrowLeft className="w-3.5 h-3.5" /> முகப்பு பக்கத்திற்குச் செல்ல (Back to Home)
+          </Link>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-xl border border-border-subtle p-8 space-y-8">
+          {/* Brand Logo & Header */}
+          <div className="text-center space-y-2">
+            <span className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-secondary font-serif text-xl font-bold shadow-md mx-auto">
+              வ
+            </span>
+            <div className="space-y-1">
+              <h2 className="font-serif text-2xl font-bold text-charcoal tracking-tight">
+                நிர்வாகி உள்நுழைவு
+              </h2>
+              <p className="font-sans text-[10px] tracking-widest text-secondary font-bold uppercase">
+                ADMINISTRATION PORTAL
+              </p>
+            </div>
+          </div>
+
+          {success ? (
+            <div className="text-center py-6 space-y-4">
+              <Shield className="w-16 h-16 text-emerald-500 mx-auto animate-pulse" />
+              <div className="space-y-1">
+                <h3 className="font-serif text-lg font-bold text-charcoal">உள்நுழைவு வெற்றிகரமாக முடிந்தது!</h3>
+                <p className="text-xs text-charcoal/60 max-w-xs mx-auto leading-relaxed">
+                  (Login Successful!) நிர்வாகப் பகுதிக்குச் செல்ல பின்வரும் பொத்தானை அழுத்தவும்.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 pt-2">
+                <Button href="/admin" variant="primary" size="sm" className="w-full text-center cursor-pointer">
+                  நிர்வாகப் பகுதிக்குச் செல்ல (Go to Admin Panel)
+                </Button>
+                <button onClick={() => setSuccess(false)} className="text-xs text-charcoal/50 hover:underline py-1 cursor-pointer">
+                  மீண்டும் உள்நுழைய (Logout)
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Username Input */}
+              <div className="space-y-1.5">
+                <label htmlFor="username" className="text-xs font-semibold text-charcoal/70 uppercase tracking-wider block">
+                  பயனர் பெயர் (Username)
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-canvas border border-border-subtle hover:border-primary/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary rounded-lg text-sm transition font-sans"
+                    placeholder="உள்நுழையும் பெயர்"
+                  />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40" />
+                </div>
+              </div>
+
+              {/* Password Input */}
+              <div className="space-y-1.5">
+                <label htmlFor="password" className="text-xs font-semibold text-charcoal/70 uppercase tracking-wider block">
+                  கடவுச்சொல் (Password)
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-10 py-3 bg-canvas border border-border-subtle hover:border-primary/40 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary rounded-lg text-sm transition font-sans"
+                    placeholder="••••••••"
+                  />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-0.5 hover:bg-black/5 rounded text-charcoal/40 hover:text-charcoal transition cursor-pointer"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between text-xs">
+                <label className="flex items-center space-x-2 text-charcoal/70 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
+                    className="rounded border-border-subtle focus:ring-primary text-primary h-4 w-4"
+                  />
+                  <span>என்னை நினைவில் கொள்க (Remember Me)</span>
+                </label>
+                <a href="#" className="text-primary hover:underline font-semibold" onClick={(e) => { e.preventDefault(); alert("கடவுச்சொல் மீட்பு அஞ்சல் அனுப்பப்பட்டது. (Password reset simulated.)"); }}>
+                  கடவுச்சொல் மறந்ததா?
+                </a>
+              </div>
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                variant="primary"
+                className="w-full py-3.5 font-bold justify-center cursor-pointer"
+                disabled={loading}
+              >
+                {loading ? "சரிபார்க்கப்படுகிறது..." : "உள்நுழைக (Sign In)"}
+              </Button>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
