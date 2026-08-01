@@ -5,13 +5,23 @@ import { BookOpen, Archive } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { staggerContainer, staggerItem } from "@/lib/motion";
 
+// Split text into grapheme clusters so script combining marks (Tamil vowel
+// signs / virama, e.g. ச+ெ, க+ு) stay attached to their base letter.
+function splitGraphemes(text) {
+  if (typeof Intl !== "undefined" && Intl.Segmenter) {
+    const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+    return Array.from(segmenter.segment(text), (s) => s.segment);
+  }
+  return Array.from(text);
+}
+
 // Background watermark: letters smoothly appear one by one from the start of
 // the word, playing once when the hero loads (no loop).
 function LetterGlow({ text }) {
   const d = 0.14; // seconds between consecutive letters appearing
   const f = 0.6; // seconds for a single letter to fade in
 
-  const letters = Array.from(text);
+  const letters = splitGraphemes(text);
 
   return (
     <span className="inline-block">
