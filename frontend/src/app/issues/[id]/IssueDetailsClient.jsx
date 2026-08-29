@@ -1,16 +1,16 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { 
-  Calendar, Download, Share2, Copy, Check, ChevronRight, 
-  BookOpen, FileText, ChevronLeft, ChevronRight as RightIcon,
-  ChevronsLeft, ChevronsRight, ZoomIn, ZoomOut, Play, Volume2
+import {
+  Calendar, Download, Share2, Copy, Check,
+  BookOpen, FileText, ChevronLeft, ChevronRight,
+  ChevronsLeft, ChevronsRight, ZoomIn, ZoomOut, Play, Pause,
+  Maximize2, Minimize2, X as XIcon
 } from "lucide-react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import SectionHeading from "@/components/common/SectionHeading";
 import IssueCard from "@/components/ui/IssueCard";
-import { motion, useMotionValue, animate } from "framer-motion";
+import { animate, useMotionValue } from "framer-motion";
 import { useLanguage } from "@/context/LanguageContext";
 import { issueTranslations } from "@/data/translations";
 import CommentsSection from "@/components/ui/CommentsSection";
@@ -34,25 +34,44 @@ function BrandIcon({ path, className = "w-4 h-4" }) {
   );
 }
 
+// Thin repeating stripe that reads as a stack of paper edges, catching light
+// unevenly like a real bound book rather than a single flat sheet.
+function PageStackEdge({ side = "right" }) {
+  return (
+    <div
+      className={`absolute top-1 bottom-1 ${side === "right" ? "-right-[3px]" : "-left-[3px]"} w-[3px] rounded-sm z-[2] pointer-events-none`}
+      style={{
+        background:
+          "repeating-linear-gradient(180deg, #e9e2d0 0px, #e9e2d0 1px, #cfc5aa 1px, #cfc5aa 2px)",
+        boxShadow: side === "right" ? "1px 0 2px rgba(0,0,0,0.35)" : "-1px 0 2px rgba(0,0,0,0.35)",
+      }}
+    />
+  );
+}
+
 export default function IssueDetailsClient({ issue, relatedIssues }) {
   const [activeTab, setActiveTab] = useState("flipbook"); // flipbook, pdf
   const [copied, setCopied] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [rawShareUrl, setRawShareUrl] = useState("");
   const [flipPage, setFlipPage] = useState(1); // Active left page (desktop) or active single page (mobile)
   const [zoom, setZoom] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
-  
-  const [pdfDoc, setPdfDoc] = useState(null);
-  const [pageImages, setPageImages] = useState([]); // Pre-rendered Blob URLs for pages
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSwipeHint, setShowSwipeHint] = useState(true);
+
+  const [pageImages, setPageImages] = useState([]);
   const [totalPages, setTotalPages] = useState(6);
   const [loadingPdf, setLoadingPdf] = useState(true);
+  const [pdfError, setPdfError] = useState(false);
   const [isFlipping, setIsFlipping] = useState(null); // 'next', 'prev', or null
   const [isMobile, setIsMobile] = useState(false);
   const [pageAspect, setPageAspect] = useState(0.707);
-  const flipProgress = useMotionValue(0); // 0..1 page-turn progress; follows the cursor on drag, animated to 0/1 on release
+  const flipProgress = useMotionValue(0);
+  const readerRef = useRef(null);
+  const readerShellRef = useRef(null);
   const { lang } = useLanguage();
 
-  // Retrieve translation for dynamic issue items
   const translation = issueTranslations[issue.id] || {};
   const displayTitle = lang === "en" ? (issue.titleEn || translation.title || issue.title) : issue.title;
   const displayMonth = lang === "en" ? (issue.monthEn || translation.month || issue.month) : issue.month;
@@ -62,29 +81,43 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
     setRawShareUrl(window.location.href);
   }, []);
 
-  // Detect mobile width on resize to toggle single/double page flipbook views
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Reset page counter if mobile view toggles
   useEffect(() => {
     setFlipPage(1);
   }, [isMobile]);
 
-  // Dynamically load PDF.js and pre-render PDF pages to high-performance Blob URLs
+  // Track native fullscreen state (Esc key, browser chrome, etc. all funnel through this)
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!readerShellRef.current) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen?.();
+    } else {
+      readerShellRef.current.requestFullscreen?.().catch(() => {});
+    }
+  };
+
   useEffect(() => {
     if (typeof window === "undefined") return;
+    let cancelled = false;
+    let localUrls = [];
 
     const loadPdfAndRenderBlobUrls = async () => {
       setLoadingPdf(true);
-      
+      setPdfError(false);
+
       const getPdfJs = () => {
         if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
         return new Promise((resolve) => {
@@ -96,7 +129,7 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
               const blob = new Blob([workerCode], { type: "application/javascript" });
               window.pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
             } catch (workerErr) {
-              window.pdfjsLib.GlobalWorkerOptions.workerSrc = 
+              window.pdfjsLib.GlobalWorkerOptions.workerSrc =
                 "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
             }
             resolve(window.pdfjsLib);
@@ -109,59 +142,108 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
         const pdfjs = await getPdfJs();
         const rawUrl = issue.pdfUrl && issue.pdfUrl.includes(".pdf") ? issue.pdfUrl : "/sample pdf.pdf";
         const url = encodeURI(rawUrl);
-        
+
         const loadingTask = pdfjs.getDocument(url);
         const pdf = await loadingTask.promise;
-        setPdfDoc(pdf);
+        if (cancelled) return;
         const total = pdf.numPages;
         setTotalPages(total);
-        
-        // Pre-render all pages to Blob URLs once for seamless zero-flicker display
+
         const renderedUrls = [];
         for (let i = 1; i <= total; i++) {
           const page = await pdf.getPage(i);
           const viewport = page.getViewport({ scale: 1.5 });
           const canvas = document.createElement("canvas");
           const context = canvas.getContext("2d");
-          
+
           canvas.height = viewport.height;
           canvas.width = viewport.width;
-          
+
           if (i === 1) setPageAspect(viewport.width / viewport.height);
-          
+
           await page.render({ canvasContext: context, viewport }).promise;
-          
-          // Generate GPU-cacheable blob URL
-          const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.95));
+
+          const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.95));
           const blobUrl = URL.createObjectURL(blob);
           renderedUrls.push(blobUrl);
         }
+        if (cancelled) {
+          renderedUrls.forEach((u) => URL.revokeObjectURL(u));
+          return;
+        }
+        localUrls = renderedUrls;
         setPageImages(renderedUrls);
       } catch (err) {
         console.error("PDF pre-rendering failed: ", err);
+        if (!cancelled) setPdfError(true);
       } finally {
-        setLoadingPdf(false);
+        if (!cancelled) setLoadingPdf(false);
       }
     };
 
     loadPdfAndRenderBlobUrls();
-    
-    // Cleanup generated blob URLs on unmount to free browser memory
+
     return () => {
-      pageImages.forEach(url => URL.revokeObjectURL(url));
+      cancelled = true;
+      localUrls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [issue.pdfUrl]);
 
-  // Autoplay page turner (PubHTML5 slideshow mode)
-  useEffect(() => {
-    let timer;
-    if (isPlaying) {
-      timer = setInterval(() => {
-        handleNextPage();
-      }, 4000);
+  const isDesktop = !isMobile;
+  const step = isMobile ? 1 : 2;
+  const maxLeft = isMobile ? totalPages : Math.max(1, totalPages - 1);
+  const TURN_DURATION = 0.55;
+
+  const completePageFlip = (dir) => {
+    if (dir === "next") {
+      setFlipPage((prev) => Math.min(prev + step, maxLeft));
+    } else if (dir === "prev") {
+      setFlipPage((prev) => Math.max(prev - step, 1));
     }
+    setIsFlipping(null);
+  };
+
+  const animateTurn = useCallback((dir) => {
+    if (isFlipping || loadingPdf) return;
+    setShowSwipeHint(false);
+    setIsFlipping(dir);
+    animate(flipProgress, 1, {
+      duration: TURN_DURATION,
+      ease: [0.45, 0.05, 0.15, 0.9],
+      onComplete: () => completePageFlip(dir),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFlipping, loadingPdf]);
+
+  const handleNextPage = useCallback(() => {
+    if (flipPage < maxLeft) animateTurn("next");
+  }, [flipPage, maxLeft, animateTurn]);
+
+  const handlePrevPage = useCallback(() => {
+    if (flipPage > 1) animateTurn("prev");
+  }, [flipPage, animateTurn]);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    if (flipPage >= maxLeft) {
+      setIsPlaying(false);
+      return;
+    }
+    const timer = setInterval(() => handleNextPage(), 4200);
     return () => clearInterval(timer);
-  }, [isPlaying, flipPage, totalPages, isMobile, isFlipping]);
+  }, [isPlaying, flipPage, maxLeft, handleNextPage]);
+
+  useEffect(() => {
+    if (activeTab !== "flipbook") return;
+    const onKeyDown = (e) => {
+      if (e.key === "ArrowRight") handleNextPage();
+      if (e.key === "ArrowLeft") handlePrevPage();
+      if (e.key === "Escape" && document.fullscreenElement) document.exitFullscreen?.();
+    };
+    const node = readerRef.current;
+    node?.addEventListener("keydown", onKeyDown);
+    return () => node?.removeEventListener("keydown", onKeyDown);
+  }, [activeTab, handleNextPage, handlePrevPage]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -175,17 +257,17 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
       navigator.share({
         title: `வடசென்னை குரல் - ${displayTitle}`,
         text: `வடசென்னை குரல் - ${displayTitle}`,
-        url: rawShareUrl
+        url: rawShareUrl,
       }).catch((err) => console.log("Share failed:", err));
       return;
     }
-
     if (key === "instagram") {
       e.preventDefault();
       navigator.clipboard.writeText(rawShareUrl);
-      alert(lang === "en"
-        ? "Instagram does not support direct links. The link has been copied to your clipboard. You can paste it into your Instagram post or story!"
-        : "இன்ஸ்டாகிராம் நேரடி இணைப்புகளை ஆதரிக்கவில்லை. இணைப்பு நகலெடுக்கப்பட்டது. உங்கள் பதிவு அல்லது ஸ்டோரியில் பகிரலாம்!"
+      alert(
+        lang === "en"
+          ? "Instagram does not support direct links. The link has been copied to your clipboard. You can paste it into your Instagram post or story!"
+          : "இன்ஸ்டாகிராம் நேரடி இணைப்புகளை ஆதரிக்கவில்லை. இணைப்பு நகலெடுக்கப்பட்டது. உங்கள் பதிவு அல்லது ஸ்டோரியில் பகிரலாம்!"
       );
     }
   };
@@ -202,108 +284,33 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
     { key: "telegram", label: "Telegram", color: "#229ED9", path: SOCIAL_PATHS.telegram, href: `https://t.me/share/url?url=${shareUrl}&text=${shareText}` },
   ];
 
-  // Localized general texts
   const t = {
     ta: {
-      share: "பகிர்க",
-      copied: "நகலெடுக்கப்பட்டது!",
-      copyLink: "இணைப்பை நகலெடு",
-      details: "இதழ் விபரங்கள்",
-      pages: "பக்கங்கள்",
-      date: "வெளியீட்டு தேதி",
-      flipView: "புத்தக வாசிப்பான்",
-      pdfView: "PDF ஆவணம்",
-      flipbookTitle: "புத்தக வாசிப்பு காட்சி",
-      downloadPdf: "இதழை பதிவிறக்குக",
-      openPdf: "புதிய விண்டோவில் திறக்க",
-      related: "தொடர்புடைய இதழ்கள்",
-      relatedSub: "மேலும் இதழ்கள்",
-      pageLabel: "பக்கம்",
-      loading: "இதழ் பக்கங்களை ஏற்றுகிறது...",
-      pdfReaderTitle: "நிலையான PDF வாசிப்பான்",
-      pdfReaderDesc: "எமது பிரசுர இதழின் அசல் PDF கோப்பினை உங்கள் உலாவியில் நேரடியாக வாசிக்கலாம்.",
-      pdfLoadError: "PDF-ஐ ஏற்ற முடியவில்லை. தயவுசெய்து கீழே பதிவிறக்கவும்.",
-      zoomIn: "பெரிதாக்கு",
-      zoomOut: "சுருக்கு",
-      slideshow: "தானியங்கி காட்சி",
-      firstPage: "முதல் பக்கம்",
-      prevPage: "முந்தைய பக்கம்",
-      nextPage: "அடுத்த பக்கம்",
-      lastPage: "கடைசி பக்கம்"
+      share: "பகிர்க", copied: "நகலெடுக்கப்பட்டது!", copyLink: "இணைப்பை நகலெடு",
+      pages: "பக்கங்கள்", date: "வெளியீட்டு தேதி", flipView: "புத்தக வாசிப்பான்", pdfView: "PDF ஆவணம்",
+      downloadPdf: "இதழை பதிவிறக்குக", related: "தொடர்புடைய இதழ்கள்", relatedSub: "மேலும் இதழ்கள்",
+      loading: "இதழ் பக்கங்களை ஏற்றுகிறது...", pdfReaderTitle: "நிலையான PDF வாசிப்பான்",
+      pdfLoadError: "இதழை ஏற்ற முடியவில்லை. மீண்டும் முயற்சிக்கவும் அல்லது கீழே பதிவிறக்கவும்.",
+      zoomIn: "பெரிதாக்கு", zoomOut: "சுருக்கு", slideshow: "தானியங்கி காட்சி", pauseSlideshow: "நிறுத்து",
+      firstPage: "முதல் பக்கம்", prevPage: "முந்தைய பக்கம்", nextPage: "அடுத்த பக்கம்", lastPage: "கடைசி பக்கம்",
+      fullscreen: "முழுத்திரை", exitFullscreen: "முழுத்திரையை விடு",
+      swipeHint: "பக்கம் புரட்ட தட்டவும் அல்லது இழுக்கவும்",
     },
     en: {
-      share: "Share This Issue",
-      copied: "Copied!",
-      copyLink: "Copy Link",
-      details: "Issue Details",
-      pages: "Pages",
-      date: "Release Date",
-      flipView: "Book Reader",
-      pdfView: "PDF Document",
-      flipbookTitle: "Book Reader View",
-      downloadPdf: "Download PDF",
-      openPdf: "Open PDF in New Window",
-      related: "Related Issues",
-      relatedSub: "MORE TO READ",
-      pageLabel: "Page",
-      loading: "Loading magazine pages...",
-      pdfReaderTitle: "Standard PDF Reader",
-      pdfReaderDesc: "Read the original PDF file of this issue directly in your browser.",
-      pdfLoadError: "PDF could not be loaded. Please download it below.",
-      zoomIn: "Zoom In",
-      zoomOut: "Zoom Out",
-      slideshow: "Slideshow Mode",
-      firstPage: "First Page",
-      prevPage: "Previous Page",
-      nextPage: "Next Page",
-      lastPage: "Last Page"
-    }
+      share: "Share This Issue", copied: "Copied!", copyLink: "Copy Link",
+      pages: "pages", date: "Released", flipView: "Book Reader", pdfView: "PDF Document",
+      downloadPdf: "Download PDF", related: "Related Issues", relatedSub: "MORE TO READ",
+      loading: "Loading pages…", pdfReaderTitle: "Standard PDF Reader",
+      pdfLoadError: "Couldn't load the issue. Try again, or download it below.",
+      zoomIn: "Zoom in", zoomOut: "Zoom out", slideshow: "Play slideshow", pauseSlideshow: "Pause slideshow",
+      firstPage: "First page", prevPage: "Previous page", nextPage: "Next page", lastPage: "Last page",
+      fullscreen: "Fullscreen", exitFullscreen: "Exit fullscreen",
+      swipeHint: "Tap or swipe the edges to turn pages",
+    },
   }[lang];
 
-  // Desktop shows a two-page spread (advance by 2); mobile shows a single page.
-  const isDesktop = !isMobile;
-  const step = isMobile ? 1 : 2;
-  const maxLeft = isMobile ? totalPages : totalPages - 1;
+  const completePercent = maxLeft > 1 ? Math.round(((flipPage - 1) / (maxLeft - 1)) * 100) : 100;
 
-  const TURN_DURATION = 0.6; // seconds for a fast, snappy, realistic page turn
-
-  const completePageFlip = (dir) => {
-    if (dir === "next") {
-      setFlipPage(prev => Math.min(prev + step, maxLeft));
-    } else if (dir === "prev") {
-      setFlipPage(prev => Math.max(prev - step, 1));
-    }
-    setIsFlipping(null);
-  };
-
-  // Start a programmatic turn (toolbar / tap): animate the sheet from its
-  // current position to fully turned over.
-  const animateTurn = (dir) => {
-    if (isFlipping || loadingPdf) return;
-    setIsFlipping(dir);
-    animate(flipProgress, 1, {
-      duration: TURN_DURATION,
-      ease: [0.45, 0.05, 0.15, 0.9],
-      onComplete: () => completePageFlip(dir),
-    });
-  };
-
-  const handleNextPage = () => {
-    if (flipPage < maxLeft) animateTurn("next");
-  };
-
-  const handlePrevPage = () => {
-    if (flipPage > 1) animateTurn("prev");
-  };
-
-  // Safe page resolver with boundary protections
-  const getPageUrl = (num) => {
-    if (num < 1 || num > totalPages) return null;
-    return pageImages[num - 1] || null;
-  };
-
-  // Which page(s) the book shows during a turn, so the underlay reveals the
-  // next spread while the active sheet curls over.
   const flippingNext = isFlipping === "next";
   const flippingPrev = isFlipping === "prev";
   const underlayLeft = flippingNext ? flipPage + step : flippingPrev ? flipPage - step : flipPage;
@@ -311,13 +318,17 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
   const sheetFront = isDesktop && flippingNext ? flipPage + 1 : flipPage;
   const sheetBack = flippingNext ? flipPage + step : flipPage - 1;
 
-  // Mouse / touch page turning: the sheet locks to the cursor while dragging,
-  // then completes (or cancels) with a slow, smooth animation on release.
+  const getPageUrl = (num) => {
+    if (num < 1 || num > totalPages) return null;
+    return pageImages[num - 1] || null;
+  };
+
   const dragStart = useRef(null);
   const [dragging, setDragging] = useState(false);
 
   const handlePagePointerDown = (e) => {
     if (isFlipping || loadingPdf) return;
+    setShowSwipeHint(false);
     const rect = e.currentTarget.getBoundingClientRect();
     const dir = e.clientX - rect.left > rect.width * 0.5 ? "next" : "prev";
     if (dir === "next" && flipPage >= maxLeft) return;
@@ -333,7 +344,6 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
     if (!dragStart.current) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const dx = e.clientX - dragStart.current.x;
-    // A page-width drag (half the book on desktop, whole book on mobile) = full turn.
     const dragSpan = rect.width * (isMobile ? 1 : 0.5);
     const raw = dragStart.current.dir === "next" ? -dx / dragSpan : dx / dragSpan;
     flipProgress.set(Math.max(0, Math.min(1, raw)));
@@ -369,9 +379,11 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
     });
   };
 
+  const iconBtn =
+    "inline-flex items-center justify-center w-9 h-9 sm:w-9 sm:h-9 rounded-lg text-white/70 transition hover:text-white hover:bg-white/10 active:bg-white/15 disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-white/70 cursor-pointer";
+
   return (
-    <div className="w-full px-4 sm:px-8 lg:px-12 py-12">
-      {/* Breadcrumbs */}
+    <div className="w-full px-4 sm:px-8 lg:px-12 py-10">
       <Breadcrumb
         items={[
           { name: lang === "ta" ? "இதழ்கள்" : "Issues", path: "/issues" },
@@ -379,369 +391,381 @@ export default function IssueDetailsClient({ issue, relatedIssues }) {
         ]}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16">
-        {/* Left Side: Cover Image */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden shadow-2xl border border-gray-100 bg-gray-50">
-            <Image
-              src={issue.coverImage}
-              alt={displayTitle}
-              fill
-              sizes="(max-width: 768px) 100vw, 400px"
-              className="object-cover"
-              priority
-            />
-          </div>
-
-          {/* Share Buttons */}
-          <div className="bg-white rounded-xl border border-border-subtle p-5 space-y-4">
-            <h4 className="font-serif text-sm font-bold text-charcoal flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-primary" /> {t.share}
-            </h4>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {socialShares.map((s) => (
-                <a
-                  key={s.key}
-                  href={s.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`Share on ${s.label}`}
-                  title={s.label}
-                  onClick={(e) => handleShareClick(e, s.key)}
-                  className="w-10 h-10 flex items-center justify-center rounded-full transition duration-200 hover:scale-110 hover:shadow-md"
-                  style={{ backgroundColor: `${s.color}1A`, color: s.color }}
-                >
-                  <BrandIcon path={s.path} className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
-            <button
-              onClick={handleCopyLink}
-              className="w-full flex items-center justify-center py-2 px-3 border border-border-subtle hover:border-primary rounded-md text-xs font-semibold text-charcoal/80 transition gap-2 cursor-pointer"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4 text-emerald-500" /> {t.copied}
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4" /> {t.copyLink}
-                </>
-              )}
-            </button>
+      {/* Compact header strip — thumbnail + facts, freeing the rest of the
+          page for the reader instead of a competing sidebar. */}
+      <div className="mt-4 mb-6 flex items-start gap-4">
+        <div className="relative w-16 h-20 sm:w-20 sm:h-24 shrink-0 rounded-lg overflow-hidden shadow-md border border-border-subtle bg-gray-50">
+          <Image src={issue.coverImage} alt={displayTitle} fill sizes="100px" className="object-cover" priority />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h1 className="font-serif text-lg sm:text-2xl lg:text-3xl font-bold text-charcoal leading-snug truncate sm:whitespace-normal">
+            {displayTitle}
+          </h1>
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-charcoal/60">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-secondary">
+              <Calendar className="w-3.5 h-3.5" /> {displayMonth}
+            </span>
+            <span className="hidden sm:inline">{t.date}: {issue.date}</span>
+            <span>{loadingPdf ? issue.pages : totalPages} {t.pages}</span>
           </div>
         </div>
+      </div>
 
-        {/* Right Side: Details */}
-        <div className="lg:col-span-8 space-y-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-xs text-charcoal/50">
-              <Calendar className="w-4 h-4 text-secondary shrink-0" />
-              <span className="font-semibold">{displayMonth}</span>
-              <span className="text-gray-300">•</span>
-              <span className="font-light">{t.date}: {issue.date}</span>
-              <span className="text-gray-300">•</span>
-              <span className="font-light">{loadingPdf ? issue.pages : totalPages} {t.pages}</span>
-            </div>
+      <p className="max-w-[70ch] font-sans text-sm sm:text-base text-charcoal/70 leading-relaxed font-light mb-6">
+        {displayDesc}
+      </p>
 
-            <h1 className="font-serif text-2xl sm:text-4xl font-bold text-charcoal leading-normal py-1.5">
-              {displayTitle}
-            </h1>
-          </div>
+      {/* Controls row: view switch left, share + fullscreen right */}
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="inline-flex p-1 rounded-lg bg-charcoal/5 border border-border-subtle">
+          <button
+            onClick={() => setActiveTab("flipbook")}
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md font-serif text-xs sm:text-sm font-bold transition cursor-pointer ${
+              activeTab === "flipbook" ? "bg-white text-primary shadow-sm" : "text-charcoal/60 hover:text-charcoal"
+            }`}
+          >
+            <BookOpen className="w-4 h-4" /> <span className="hidden xs:inline">{t.flipView}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("pdf")}
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md font-serif text-xs sm:text-sm font-bold transition cursor-pointer ${
+              activeTab === "pdf" ? "bg-white text-primary shadow-sm" : "text-charcoal/60 hover:text-charcoal"
+            }`}
+          >
+            <FileText className="w-4 h-4" /> <span className="hidden xs:inline">{t.pdfView}</span>
+          </button>
+        </div>
 
-          <p className="font-sans text-sm sm:text-base text-charcoal/70 leading-relaxed font-light">
-            {displayDesc}
-          </p>
-
-          {/* Interactive Viewer Tabs */}
-          <div className="space-y-4">
-            <div className="flex border-b border-border-subtle">
-              <button
-                onClick={() => setActiveTab("flipbook")}
-                className={`py-3 px-6 font-serif text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
-                  activeTab === "flipbook"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-charcoal/60 hover:text-primary"
-                }`}
-              >
-                <BookOpen className="w-4 h-4" /> {t.flipView}
-              </button>
-              <button
-                onClick={() => setActiveTab("pdf")}
-                className={`py-3 px-6 font-serif text-sm font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
-                  activeTab === "pdf"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-charcoal/60 hover:text-primary"
-                }`}
-              >
-                <FileText className="w-4 h-4" /> {t.pdfView}
-              </button>
-            </div>
-
-            {/* Viewer Screen Container */}
-            {activeTab === "flipbook" ? (
-              /* Kindle-style Book Reader */
-              <div className="w-full bg-[#1a1a1a] rounded-xl overflow-hidden border border-border-subtle flex flex-col items-center justify-between min-h-[720px] shadow-2xl relative select-none">
-                
-                {/* 1. Top Header bar */}
-                <div className="w-full bg-[#2a2a2a] px-4 py-2 border-b border-white/5 flex items-center justify-between text-white/80 text-[10px] sm:text-xs z-10">
-                  <span className="font-serif truncate font-bold text-secondary max-w-[200px] sm:max-w-none">
-                    {displayTitle} - {displayMonth}
-                  </span>
-                  <div className="flex items-center space-x-3 text-white/70">
-                    <button onClick={() => setZoom(prev => Math.max(0.8, prev - 0.1))} className="hover:text-white cursor-pointer" title={t.zoomOut}><ZoomOut className="w-3.5 h-3.5" /></button>
-                    <span className="text-[9px] font-sans font-bold">{Math.round(zoom * 100)}%</span>
-                    <button onClick={() => setZoom(prev => Math.min(1.5, prev + 0.1))} className="hover:text-white cursor-pointer" title={t.zoomIn}><ZoomIn className="w-3.5 h-3.5" /></button>
-                    <span className="text-white/10">|</span>
-                    <button onClick={() => setIsPlaying(!isPlaying)} className={`hover:text-white cursor-pointer ${isPlaying ? "text-primary animate-pulse" : ""}`} title={t.slideshow}><Play className="w-3.5 h-3.5" /></button>
-                  </div>
-                </div>
-
-                {/* 2. Kindle Book Reading Area */}
-                <div className="w-full flex-1 flex items-center justify-center p-4 sm:p-8 relative overflow-hidden bg-[radial-gradient(ellipse_at_center,_#2c2c2c,_#1a1a1a)] min-h-[520px]">
-
-                  {loadingPdf ? (
-                    <div className="flex flex-col items-center justify-center text-white space-y-4 text-xs">
-                      <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                      <p className="font-medium animate-pulse">{t.loading}</p>
-                    </div>
-                  ) : pageImages.length > 0 ? (
-                    /* The Book */
-                    <div
-                      className="relative"
-                      style={{
-                        width: isDesktop ? "min(88vw, 820px)" : "min(88vw, 540px)",
-                        aspectRatio: isDesktop ? String(pageAspect * 2) : String(pageAspect),
-                        transform: `scale(${zoom})`,
-                        transition: "transform 0.3s ease",
-                      }}
-                    >
-                      {/* Device bezel */}
-                      <div className="absolute -inset-4 sm:-inset-6 rounded-2xl bg-gradient-to-br from-[#3c3c3c] via-[#1d1d1d] to-[#0a0a0a] shadow-[0_30px_70px_-18px_rgba(0,0,0,0.9)] ring-1 ring-white/10" />
-                      {/* Book cover body */}
-                      <div className="absolute inset-0 rounded-md bg-[#0d0d0d] p-2 sm:p-3 shadow-inner">
-                        {/* Page block */}
-                        <div className="relative w-full h-full rounded-[3px] bg-[#f6f1e6] overflow-hidden shadow-[0_0_0_1px_rgba(0,0,0,0.3),0_10px_30px_rgba(0,0,0,0.5)]">
-                          {/* Realistic stacked pages page-border details underneath */}
-                          {isDesktop ? (
-                            <>
-                              <div className="absolute -right-1 top-0 bottom-0 w-1.5 bg-gradient-to-r from-white/90 via-[#f6f1e6] to-[#d8d3c5] border-r border-neutral-700/30 z-10 pointer-events-none" />
-                              <div className="absolute -left-1 top-0 bottom-0 w-1.5 bg-gradient-to-l from-white/90 via-[#f6f1e6] to-[#d8d3c5] border-l border-neutral-700/30 z-10 pointer-events-none" />
-                            </>
-                          ) : (
-                            <div className="absolute -right-1 top-0 bottom-0 w-1.5 bg-gradient-to-r from-white/90 via-[#f6f1e6] to-[#d8d3c5] border-r border-neutral-700/30 z-10 pointer-events-none" />
-                          )}
-
-                          {/* Paper texture wash */}
-                          <div
-                            className="absolute inset-0 pointer-events-none"
-                            style={{ background: "radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.5), rgba(0,0,0,0) 65%), linear-gradient(180deg, rgba(0,0,0,0.05), rgba(255,255,255,0.28) 50%, rgba(0,0,0,0.06))" }}
-                          />
-                          {/* Binding / spine shadows */}
-                          {isDesktop ? (
-                            <>
-                              <div className="absolute top-0 bottom-0 left-0 w-6 bg-gradient-to-r from-black/20 via-black/3 to-transparent z-10 pointer-events-none" />
-                              <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-4 bg-gradient-to-r from-black/25 via-transparent to-black/25 z-10 pointer-events-none" />
-                              <div className="absolute top-0 bottom-0 left-1/2 w-px bg-black/25 z-10 pointer-events-none" />
-                              <div className="absolute top-0 bottom-0 right-0 w-6 bg-gradient-to-l from-black/20 via-black/3 to-transparent z-10 pointer-events-none" />
-                            </>
-                          ) : (
-                            <div className="absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-black/20 via-black/4 to-transparent z-10 pointer-events-none" />
-                          )}
-
-                          {/* Page stack: two-page spread on desktop, single page on mobile */}
-                          <div
-                            className={`relative w-full h-full preserve-3d ${dragging ? "cursor-grabbing" : "cursor-pointer"}`}
-                            style={{ perspective: "2600px", touchAction: "pan-y" }}
-                            onPointerDown={handlePagePointerDown}
-                            onPointerMove={handlePagePointerMove}
-                            onPointerUp={handlePagePointerUp}
-                            onPointerCancel={handlePagePointerCancel}
-                          >
-                            {isDesktop ? (
-                              <>
-                                <div className="absolute top-0 bottom-0 left-0 w-1/2">
-                                  {getPageUrl(underlayLeft) && (
-                                    <img src={getPageUrl(underlayLeft)} draggable={false} className="absolute inset-0 w-full h-full object-contain select-none" alt={`Page ${underlayLeft}`} />
-                                  )}
-                                </div>
-                                <div className="absolute top-0 bottom-0 right-0 w-1/2">
-                                  {getPageUrl(underlayRight) && (
-                                    <img src={getPageUrl(underlayRight)} draggable={false} className="absolute inset-0 w-full h-full object-contain select-none" alt={`Page ${underlayRight}`} />
-                                  )}
-                                </div>
-                              </>
-                            ) : (
-                              getPageUrl(underlayLeft) && (
-                                <img src={getPageUrl(underlayLeft)} draggable={false} className="absolute inset-0 w-full h-full object-contain select-none" alt={`Page ${underlayLeft}`} />
-                              )
-                            )}
-
-                            {/* Turning sheet + sweeping underlay shadow */}
-                            {isFlipping && (
-                              <>
-                                <UnderlayShade progress={flipProgress} dir={isFlipping} />
-                                <TurningPage
-                                  dir={isFlipping}
-                                  frontUrl={getPageUrl(sheetFront)}
-                                  backUrl={getPageUrl(sheetBack)}
-                                  progress={flipProgress}
-                                  half={isDesktop}
-                                />
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-white text-xs text-center">{t.pdfLoadError}</div>
-                  )}
-
-                </div>
-
-                {/* 3. PubHTML5 Bottom Control Toolbar */}
-                <div className="w-full bg-[#202020] px-4 py-3 border-t border-white/5 flex items-center justify-between text-white/80 z-10">
-                  <div className="flex items-center space-x-2 text-xs">
-                    <button 
-                      onClick={() => !isFlipping && setFlipPage(1)} 
-                      disabled={flipPage === 1 || isFlipping || loadingPdf}
-                      className="p-1.5 rounded hover:bg-white/10 hover:text-white disabled:opacity-20 cursor-pointer"
-                      title={t.firstPage}
-                    >
-                      <ChevronsLeft className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={handlePrevPage} 
-                      disabled={flipPage === 1 || isFlipping || loadingPdf}
-                      className="p-1.5 rounded hover:bg-white/10 hover:text-white disabled:opacity-20 cursor-pointer"
-                      title={t.prevPage}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <span className="text-[10px] sm:text-xs font-sans text-white/70 font-bold bg-[#141414] border border-white/10 px-3 py-1 rounded">
-                      {isDesktop ? `${underlayLeft} - ${underlayRight} / ${totalPages}` : `${underlayLeft} / ${totalPages}`}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center space-x-2 text-xs">
-                    <button 
-                      onClick={handleNextPage} 
-                      disabled={(flipPage >= maxLeft || isFlipping || loadingPdf)}
-                      className="p-1.5 rounded hover:bg-white/10 hover:text-white disabled:opacity-20 cursor-pointer"
-                      title={t.nextPage}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => !isFlipping && setFlipPage(maxLeft)} 
-                      disabled={(flipPage >= maxLeft || isFlipping || loadingPdf)}
-                      className="p-1.5 rounded hover:bg-white/10 hover:text-white disabled:opacity-20 cursor-pointer"
-                      title={t.lastPage}
-                    >
-                      <ChevronsRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Inline CSS styling inject */}
-                <style jsx global>{`
-                  img {
-                    -webkit-user-drag: none;
-                    -khtml-user-drag: none;
-                    user-drag: none;
-                    user-select: none;
-                  }
-                  .perspective-2000 { 
-                    perspective: 2000px; 
-                    -webkit-perspective: 2000px;
-                  }
-                  .preserve-3d { 
-                    transform-style: preserve-3d; 
-                    -webkit-transform-style: preserve-3d;
-                  }
-                  .backface-hidden { 
-                    backface-visibility: hidden; 
-                    -webkit-backface-visibility: hidden;
-                  }
-                `}</style>
-
+        <div className="relative flex items-center gap-2">
+          <button
+            onClick={() => setShareOpen((v) => !v)}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border-subtle hover:border-primary text-xs font-semibold text-charcoal/80 transition cursor-pointer"
+          >
+            <Share2 className="w-4 h-4 text-primary" /> <span className="hidden sm:inline">{t.share}</span>
+          </button>
+          {shareOpen && (
+            <div className="absolute right-0 top-full mt-2 z-30 w-64 bg-white rounded-xl border border-border-subtle shadow-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-serif text-xs font-bold text-charcoal">{t.share}</span>
+                <button onClick={() => setShareOpen(false)} className="text-charcoal/40 hover:text-charcoal cursor-pointer">
+                  <XIcon className="w-4 h-4" />
+                </button>
               </div>
-            ) : (
-              /* Standard PDF View - opens directly as a scrollable document */
-              <div className="w-full bg-[#1e1e1e] rounded-xl overflow-hidden border border-border-subtle flex flex-col min-h-[500px]">
-                {/* Top bar: document title with the download button on the side */}
-                <div className="w-full bg-[#2a2a2a] px-4 py-2.5 border-b border-white/5 flex items-center justify-between gap-3 text-white/80 text-xs">
-                  <span className="font-serif truncate font-bold text-secondary">
-                    {t.pdfReaderTitle}
-                  </span>
+              <div className="flex flex-wrap gap-2">
+                {socialShares.map((s) => (
+                  <a
+                    key={s.key}
+                    href={s.href}
+                    onClick={(e) => handleShareClick(e, s.key)}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Share on ${s.label}`}
+                    title={s.label}
+                    className="w-9 h-9 flex items-center justify-center rounded-full transition hover:scale-105"
+                    style={{ backgroundColor: `${s.color}1A`, color: s.color }}
+                  >
+                    <BrandIcon path={s.path} className="w-4 h-4" />
+                  </a>
+                ))}
+              </div>
+              <button
+                onClick={handleCopyLink}
+                className="w-full flex items-center justify-center py-2 px-3 border border-border-subtle hover:border-primary rounded-lg text-xs font-semibold text-charcoal/80 transition gap-2 cursor-pointer"
+              >
+                {copied ? (<><Check className="w-4 h-4 text-emerald-500" /> {t.copied}</>) : (<><Copy className="w-4 h-4" /> {t.copyLink}</>)}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {activeTab === "flipbook" ? (
+        <div
+          ref={readerShellRef}
+          className={isFullscreen ? "bg-[#161616] flex flex-col" : "w-full"}
+          style={isFullscreen ? { position: "fixed", inset: 0, zIndex: 50 } : undefined}
+        >
+          <div
+            ref={readerRef}
+            tabIndex={0}
+            className={`w-full bg-[#161616] overflow-hidden border border-border-subtle flex flex-col select-none outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
+              isFullscreen ? "flex-1 rounded-none border-0" : "rounded-xl shadow-xl min-h-[420px] sm:min-h-[560px]"
+            }`}
+          >
+            {/* Toolbar */}
+            <div className="w-full bg-[#202020] px-2 sm:px-4 py-2 sm:py-2.5 border-b border-white/5 flex items-center justify-between text-white/80 z-10 shrink-0">
+              <div className="flex items-center gap-0.5 sm:gap-1">
+                <button onClick={() => setZoom((p) => Math.max(0.8, +(p - 0.1).toFixed(2)))} className={`${iconBtn} hidden sm:inline-flex`} title={t.zoomOut}>
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <span className="hidden sm:inline text-[10px] font-sans font-bold w-9 text-center tabular-nums">{Math.round(zoom * 100)}%</span>
+                <button onClick={() => setZoom((p) => Math.min(1.5, +(p + 0.1).toFixed(2)))} className={`${iconBtn} hidden sm:inline-flex`} title={t.zoomIn}>
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+              </div>
+              <span className="font-serif text-[11px] sm:text-xs font-bold text-secondary truncate max-w-[45vw] sm:max-w-[240px]">
+                {displayTitle}
+              </span>
+              <div className="flex items-center gap-0.5 sm:gap-1">
+                <button
+                  onClick={() => setIsPlaying((p) => !p)}
+                  className={`${iconBtn} ${isPlaying ? "text-primary bg-white/5" : ""}`}
+                  title={isPlaying ? t.pauseSlideshow : t.slideshow}
+                  disabled={loadingPdf || flipPage >= maxLeft}
+                >
+                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                </button>
+                <button onClick={toggleFullscreen} className={iconBtn} title={isFullscreen ? t.exitFullscreen : t.fullscreen}>
+                  {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Reading area */}
+            <div className={`w-full flex-1 flex items-center justify-center p-3 sm:p-8 relative overflow-hidden bg-[radial-gradient(ellipse_at_center,_#242424,_#161616)] ${isFullscreen ? "" : "min-h-[340px] sm:min-h-[440px]"}`}>
+              {loadingPdf ? (
+                <div className="flex flex-col items-center justify-center text-white space-y-4 text-xs">
+                  <div className="w-9 h-9 border-[3px] border-primary border-t-transparent rounded-full animate-spin" />
+                  <p className="font-medium text-white/70">{t.loading}</p>
+                </div>
+              ) : pdfError || pageImages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center text-center text-white/80 gap-3 max-w-xs">
+                  <FileText className="w-9 h-9 text-primary" />
+                  <p className="text-xs">{t.pdfLoadError}</p>
                   <a
                     href={issue.pdfUrl && issue.pdfUrl.includes(".pdf") ? issue.pdfUrl : "/sample pdf.pdf"}
                     download
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary hover:bg-primary/90 px-3 py-1.5 text-xs font-semibold text-white transition cursor-pointer shadow-md"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-primary/90 px-4 py-2 text-xs font-semibold text-white transition cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" /> {t.downloadPdf}
                   </a>
                 </div>
+              ) : (
+                <div
+                  className="relative group"
+                  style={{
+                    width: isDesktop ? "min(86vw, 860px)" : "min(92vw, 460px)",
+                    maxHeight: isFullscreen ? "calc(100vh - 140px)" : isDesktop ? "70vh" : "60vh",
+                    aspectRatio: isDesktop ? String(pageAspect * 2) : String(pageAspect),
+                  }}
+                >
+                  <div
+                    className="relative w-full h-full"
+                    style={{ transform: `scale(${zoom})`, transition: "transform 0.25s ease", transformOrigin: "center" }}
+                  >
+                    {/* Ambient contact shadow under the book for depth */}
+                    <div
+                      className="absolute -bottom-3 left-4 right-4 h-4 rounded-full pointer-events-none"
+                      style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.55), transparent 70%)" }}
+                    />
 
-                {/* Scrollable document body */}
-                <div className="flex-1 max-h-[70vh] overflow-y-auto p-6 sm:p-10 bg-[radial-gradient(ellipse_at_center,_#2c2c2c,_#1a1a1a)]">
-                  {loadingPdf ? (
-                    <div className="flex flex-col items-center justify-center text-white space-y-4 text-xs min-h-[400px]">
-                      <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                      <p className="font-medium animate-pulse">{t.loading}</p>
-                    </div>
-                  ) : pageImages.length > 0 ? (
-                    <div className="flex flex-col items-center gap-6">
-                      {pageImages.map((_, i) => (
-                        <div key={i} className="relative w-full max-w-2xl">
-                          <img
-                            src={getPageUrl(i + 1)}
-                            alt={`Page ${i + 1}`}
-                            draggable={false}
-                            className="w-full h-auto rounded shadow-2xl select-none"
-                          />
-                          <span className="absolute bottom-2.5 right-3 bg-white/80 backdrop-blur rounded px-1.5 py-0.5 text-[10px] font-sans font-bold text-charcoal/60">
-                            {i + 1}
-                          </span>
+                    <div className="absolute inset-0 rounded-md bg-[#111] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] ring-1 ring-white/10 p-1.5 sm:p-3">
+                      <div className="relative w-full h-full rounded-[2px] bg-[#f6f1e6] overflow-visible shadow-[0_0_0_1px_rgba(0,0,0,0.25)]">
+                        {isDesktop ? (
+                          <>
+                            <PageStackEdge side="left" />
+                            <PageStackEdge side="right" />
+                          </>
+                        ) : (
+                          <PageStackEdge side="right" />
+                        )}
+
+                        {/* Paper texture wash */}
+                        <div
+                          className="absolute inset-0 pointer-events-none z-[1]"
+                          style={{
+                            background:
+                              "radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.45), rgba(0,0,0,0) 65%), linear-gradient(180deg, rgba(0,0,0,0.04), rgba(255,255,255,0.22) 50%, rgba(0,0,0,0.05))",
+                          }}
+                        />
+                        {/* Book spine gutter */}
+                        {isDesktop && (
+                          <>
+                            <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-6 bg-gradient-to-r from-black/22 via-transparent to-black/22 z-[1] pointer-events-none" />
+                            <div className="absolute top-0 bottom-0 left-1/2 w-px bg-black/25 z-[1] pointer-events-none" />
+                          </>
+                        )}
+
+                        <div
+                          className={`relative w-full h-full preserve-3d overflow-hidden rounded-[2px] ${dragging ? "cursor-grabbing" : "cursor-pointer"}`}
+                          style={{ perspective: "2600px", touchAction: "pan-y" }}
+                          onPointerDown={handlePagePointerDown}
+                          onPointerMove={handlePagePointerMove}
+                          onPointerUp={handlePagePointerUp}
+                          onPointerCancel={handlePagePointerCancel}
+                        >
+                          {isDesktop ? (
+                            <>
+                              <div className="absolute top-0 bottom-0 left-0 w-1/2">
+                                {getPageUrl(underlayLeft) && (
+                                  <img src={getPageUrl(underlayLeft)} draggable={false} className="absolute inset-0 w-full h-full object-contain select-none" alt={`Page ${underlayLeft}`} />
+                                )}
+                              </div>
+                              <div className="absolute top-0 bottom-0 right-0 w-1/2">
+                                {getPageUrl(underlayRight) && (
+                                  <img src={getPageUrl(underlayRight)} draggable={false} className="absolute inset-0 w-full h-full object-contain select-none" alt={`Page ${underlayRight}`} />
+                                )}
+                              </div>
+                            </>
+                          ) : (
+                            getPageUrl(underlayLeft) && (
+                              <img src={getPageUrl(underlayLeft)} draggable={false} className="absolute inset-0 w-full h-full object-contain select-none" alt={`Page ${underlayLeft}`} />
+                            )
+                          )}
+
+                          {isFlipping && (
+                            <>
+                              <UnderlayShade progress={flipProgress} dir={isFlipping} />
+                              <TurningPage
+                                dir={isFlipping}
+                                frontUrl={getPageUrl(sheetFront)}
+                                backUrl={getPageUrl(sheetBack)}
+                                progress={flipProgress}
+                                half={isDesktop}
+                              />
+                            </>
+                          )}
+
+                          {/* Static corner curl hint — a quiet cue that the page lifts, fades in on hover (desktop) */}
+                          {!isFlipping && flipPage < maxLeft && (
+                            <div
+                              className="absolute bottom-0 right-0 w-8 h-8 sm:w-10 sm:h-10 pointer-events-none opacity-40 sm:opacity-0 sm:group-hover:opacity-60 transition-opacity duration-300 z-[2]"
+                              style={{
+                                clipPath: "polygon(100% 0, 0 100%, 100% 100%)",
+                                background: "linear-gradient(135deg, rgba(0,0,0,0.06), rgba(0,0,0,0.22))",
+                              }}
+                            />
+                          )}
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center text-white text-center space-y-4 min-h-[400px]">
-                      <FileText className="w-12 h-12 text-primary" />
-                      <p className="text-xs font-light">{t.pdfLoadError}</p>
-                      <a
-                        href={issue.pdfUrl && issue.pdfUrl.includes(".pdf") ? issue.pdfUrl : "/sample pdf.pdf"}
-                        download
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-primary/90 px-4 py-2 text-xs font-semibold text-white transition cursor-pointer shadow-md"
-                      >
-                        <Download className="w-3.5 h-3.5" /> {t.downloadPdf}
-                      </a>
+                  </div>
+
+                  {/* Edge tap zones */}
+                  <button
+                    onClick={handlePrevPage}
+                    disabled={flipPage <= 1 || isFlipping}
+                    aria-label={t.prevPage}
+                    className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-black/40 backdrop-blur text-white/80 flex items-center justify-center hover:bg-black/60 hover:text-white disabled:opacity-0 transition cursor-pointer z-10"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleNextPage}
+                    disabled={flipPage >= maxLeft || isFlipping}
+                    aria-label={t.nextPage}
+                    className="absolute -right-2 sm:-right-4 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-black/40 backdrop-blur text-white/80 flex items-center justify-center hover:bg-black/60 hover:text-white disabled:opacity-0 transition cursor-pointer z-10"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+
+                  {/* First-visit swipe hint, dismissed on first interaction */}
+                  {showSwipeHint && isMobile && (
+                    <div className="absolute inset-x-0 bottom-1 flex justify-center pointer-events-none">
+                      <span className="text-[10px] text-white/70 bg-black/50 backdrop-blur px-3 py-1 rounded-full animate-pulse">
+                        {t.swipeHint}
+                      </span>
                     </div>
                   )}
                 </div>
+              )}
+            </div>
+
+            {/* Bottom bar: progress + controls */}
+            <div className="w-full bg-[#1b1b1b] border-t border-white/5 z-10 shrink-0">
+              <div className="h-[3px] w-full bg-white/10">
+                <div className="h-full bg-primary transition-all duration-300" style={{ width: `${completePercent}%` }} />
+              </div>
+              <div className="px-2 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between text-white/80">
+                <div className="flex items-center gap-0.5">
+                  <button onClick={() => setFlipPage(1)} disabled={flipPage === 1 || isFlipping || loadingPdf} className={iconBtn} title={t.firstPage}>
+                    <ChevronsLeft className="w-4 h-4" />
+                  </button>
+                  <button onClick={handlePrevPage} disabled={flipPage === 1 || isFlipping || loadingPdf} className={iconBtn} title={t.prevPage}>
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-sans font-bold bg-black/30 px-3 py-1.5 rounded-full tabular-nums">
+                  {isDesktop ? `${underlayLeft}–${underlayRight}` : underlayLeft} / {totalPages}
+                </span>
+
+                <div className="flex items-center gap-0.5">
+                  <button onClick={handleNextPage} disabled={flipPage >= maxLeft || isFlipping || loadingPdf} className={iconBtn} title={t.nextPage}>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => setFlipPage(maxLeft)} disabled={flipPage >= maxLeft || isFlipping || loadingPdf} className={iconBtn} title={t.lastPage}>
+                    <ChevronsRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <style jsx global>{`
+            img { -webkit-user-drag: none; user-select: none; }
+            .preserve-3d { transform-style: preserve-3d; -webkit-transform-style: preserve-3d; }
+            .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+          `}</style>
+        </div>
+      ) : (
+        /* Standard PDF View — a plain scrollable document, download always visible */
+        <div className="w-full bg-[#161616] rounded-xl overflow-hidden border border-border-subtle flex flex-col min-h-[420px] sm:min-h-[500px] shadow-xl">
+          <div className="w-full bg-[#202020] px-4 py-2.5 border-b border-white/5 flex items-center justify-between gap-3 text-white/80 text-xs">
+            <span className="font-serif truncate font-bold text-secondary">{t.pdfReaderTitle}</span>
+            <a
+              href={issue.pdfUrl && issue.pdfUrl.includes(".pdf") ? issue.pdfUrl : "/sample pdf.pdf"}
+              download
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary hover:bg-primary/90 px-3 py-1.5 text-xs font-semibold text-white transition cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" /> {t.downloadPdf}
+            </a>
+          </div>
+
+          <div className="flex-1 max-h-[70vh] overflow-y-auto p-4 sm:p-10 bg-[radial-gradient(ellipse_at_center,_#242424,_#161616)]">
+            {loadingPdf ? (
+              <div className="flex flex-col items-center justify-center text-white space-y-4 text-xs min-h-[400px]">
+                <div className="w-9 h-9 border-[3px] border-primary border-t-transparent rounded-full animate-spin" />
+                <p className="font-medium text-white/70">{t.loading}</p>
+              </div>
+            ) : pdfError || pageImages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center text-white text-center space-y-4 min-h-[400px]">
+                <FileText className="w-10 h-10 text-primary" />
+                <p className="text-xs text-white/80 max-w-xs">{t.pdfLoadError}</p>
+                <a
+                  href={issue.pdfUrl && issue.pdfUrl.includes(".pdf") ? issue.pdfUrl : "/sample pdf.pdf"}
+                  download
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary hover:bg-primary/90 px-4 py-2 text-xs font-semibold text-white transition cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" /> {t.downloadPdf}
+                </a>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-6">
+                {pageImages.map((_, i) => (
+                  <div key={i} className="relative w-full max-w-2xl">
+                    <img src={getPageUrl(i + 1)} alt={`Page ${i + 1}`} draggable={false} className="w-full h-auto rounded shadow-2xl select-none" />
+                    <span className="absolute bottom-2.5 right-3 bg-white/85 backdrop-blur rounded px-1.5 py-0.5 text-[10px] font-sans font-bold text-charcoal/60">
+                      {i + 1}
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Comments Section */}
       <div className="mt-12">
         <CommentsSection issueId={issue.id} />
       </div>
 
-      {/* Related Issues Section */}
       {relatedIssues && relatedIssues.length > 0 && (
         <div className="border-t border-border-subtle pt-10 mt-10 space-y-6">
           <SectionHeading title={t.related} subtitle={t.relatedSub} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {relatedIssues.map((issue) => (
-              <IssueCard key={issue.id} issue={issue} />
+            {relatedIssues.map((related) => (
+              <IssueCard key={related.id} issue={related} />
             ))}
           </div>
         </div>

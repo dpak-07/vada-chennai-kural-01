@@ -50,29 +50,29 @@ export default function RecentIssuesGrid({ issues }) {
           className="lg:col-span-2"
         >
           <Link href={`/issues/${lead.id}`} className="group block h-full">
-            <div className="relative flex min-h-[320px] h-full flex-col overflow-hidden rounded-2xl bg-gray-100">
+            <div className="relative flex min-h-[340px] h-full flex-col overflow-hidden rounded-2xl bg-black border-2 border-[#800020]/20 shadow-lg group-hover:shadow-2xl transition-all duration-300">
               <Image
                 src={lead.coverImage}
                 alt={leadInfo.title}
                 fill
                 sizes="(max-width: 1024px) 100vw, 66vw"
-                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105 opacity-90"
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/25 to-transparent" />
-              <div className="relative z-10 mt-auto p-6 sm:p-8">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-[11px] font-medium text-white/75">
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+              <div className="relative z-10 mt-auto p-6 sm:p-8 text-left">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-[11px] font-medium text-white/80">
                   <Calendar className="h-3.5 w-3.5 text-secondary" />
-                  <span className="font-semibold text-white/90">{leadInfo.month}</span>
+                  <span className="font-bold text-white">{leadInfo.month}</span>
                   <span aria-hidden className="text-white/40">•</span>
                   <span>
                     {lead.pages} {t.pagesUnit}
                   </span>
                 </div>
-                <h3 className="mt-2.5 max-w-xl font-serif text-2xl font-bold leading-tight text-white sm:text-3xl lg:text-4xl">
+                <h3 className="mt-2.5 max-w-xl font-serif text-2xl font-black leading-tight text-white sm:text-3xl lg:text-4xl group-hover:text-secondary-light transition-colors">
                   {leadInfo.title}
                 </h3>
-                <span className="mt-4 inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-wider text-secondary">
+                <span className="mt-4 inline-flex items-center gap-1.5 font-sans text-xs font-bold uppercase tracking-wider text-secondary group-hover:text-white transition-colors">
                   {t.readBtn}
                   <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
@@ -82,7 +82,7 @@ export default function RecentIssuesGrid({ issues }) {
         </motion.div>
 
         {/* Stacked compact cards */}
-        <div className="divide-y divide-border-subtle overflow-hidden rounded-2xl border border-border-subtle bg-white shadow-sm">
+        <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl border-2 border-gray-100 bg-white shadow-md">
           {stack.map((issue, i) => {
             const info = resolveIssue(issue, lang);
             return (
@@ -95,9 +95,9 @@ export default function RecentIssuesGrid({ issues }) {
               >
                 <Link
                   href={`/issues/${issue.id}`}
-                  className="group flex items-center gap-4 p-4 transition-colors duration-200 hover:bg-canvas sm:gap-5 sm:p-5"
+                  className="group flex items-center gap-4 p-4 transition-colors duration-200 hover:bg-[#800020]/5 sm:gap-5 sm:p-5 text-left"
                 >
-                  <div className="relative aspect-[3/4] w-16 shrink-0 overflow-hidden rounded-lg bg-gray-100 sm:w-20">
+                  <div className="relative aspect-[3/4] w-16 shrink-0 overflow-hidden rounded-lg bg-black border border-gray-100 sm:w-20 shadow-sm">
                     <Image
                       src={issue.coverImage}
                       alt={info.title}
@@ -108,17 +108,17 @@ export default function RecentIssuesGrid({ issues }) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 font-sans text-[11px] font-medium text-charcoal/50">
-                      <span className="font-semibold text-charcoal/70">{info.month}</span>
+                      <span className="font-bold text-[#800020]">{info.month}</span>
                       <span aria-hidden className="text-gray-300">•</span>
                       <span>
                         {issue.pages} {t.pagesUnit}
                       </span>
                     </div>
-                    <h4 className="mt-1.5 line-clamp-2 font-serif text-base font-bold leading-snug text-charcoal transition-colors duration-200 group-hover:text-primary sm:text-lg">
+                    <h4 className="mt-1.5 line-clamp-2 font-serif text-base font-bold leading-snug text-[#121216] transition-colors duration-200 group-hover:text-[#800020] sm:text-lg">
                       {info.title}
                     </h4>
                   </div>
-                  <ArrowUpRight className="h-4 w-4 shrink-0 text-charcoal/25 transition-colors duration-200 group-hover:text-primary" />
+                  <ArrowUpRight className="h-4 w-4 shrink-0 text-charcoal/30 transition-colors duration-200 group-hover:text-[#800020] group-hover:translate-x-0.5" />
                 </Link>
               </motion.div>
             );
@@ -131,7 +131,7 @@ export default function RecentIssuesGrid({ issues }) {
         <Button
           href="/issues"
           variant="outline"
-          className="group inline-flex items-center justify-center gap-2 px-8 py-3 cursor-pointer"
+          className="group inline-flex items-center justify-center gap-2 px-8 py-3.5 border-2 border-[#800020] text-[#800020] hover:bg-[#800020] hover:text-white font-bold cursor-pointer transition-all duration-300 shadow-xs"
         >
           {t.btnText}
           <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />

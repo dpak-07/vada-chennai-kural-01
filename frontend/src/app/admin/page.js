@@ -3,90 +3,48 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   LayoutDashboard, BookOpen, Users, LogOut, Plus, Trash2, Edit2, 
-  Download, Search, CheckCircle, X, ShieldCheck, Languages
+  Download, Search, CheckCircle, X, ShieldCheck, Languages, MapPin, 
+  Phone, Mail, Globe, Sparkles, HelpCircle, Save, Info, Users2, Calendar
 } from "lucide-react";
 import Button from "@/components/common/Button";
+
+// Initial imports
 import issuesData from "@/data/issues.json";
 import { issueTranslations } from "@/data/translations";
-
-// Local translation fallbacks
-const translateMonth = (engMonth) => {
-  const monthMap = {
-    january: "ஜனவரி",
-    february: "பிப்ரவரி",
-    march: "மார்ச்",
-    april: "ஏப்ரல்",
-    may: "மே",
-    june: "ஜூன்",
-    july: "ஜூலை",
-    august: "ஆகஸ்ட்",
-    september: "செப்டம்பர்",
-    october: "அக்டோபர்",
-    november: "நவம்பர்",
-    december: "டிசம்பர்"
-  };
-  
-  const clean = engMonth.toLowerCase().trim();
-  const match = clean.match(/([a-z]+)\s*(\d{4})/);
-  if (match) {
-    const m = monthMap[match[1]] || match[1];
-    const y = match[2];
-    return `${m} ${y}`;
-  }
-  return monthMap[clean] || engMonth;
-};
-
-const translateWord = (word) => {
-  const dictionary = {
-    gana: "கானா",
-    music: "இசை",
-    heritage: "மரபு",
-    history: "வரலாறு",
-    boxing: "குத்துச்சண்டை",
-    boxer: "குத்துச்சண்டை வீரர்",
-    port: "துறைமுகம்",
-    harbor: "துறைமுகம்",
-    street: "தெரு",
-    streets: "தெருக்கள்",
-    fishermen: "மீனவர்கள்",
-    weavers: "நெசவாளர்கள்",
-    north: "வட",
-    chennai: "சென்னை",
-    voice: "குரல்",
-    issue: "இதழ்",
-    intro: "அறிமுகம்",
-    traditional: "பாரம்பரிய",
-    arts: "கலைகள்",
-    football: "கால்பந்து",
-    stadium: "மைதானம்",
-    play: "விளையாட்டு",
-    story: "கதை",
-    stories: "கதைகள்",
-    life: "வாழ்வியல்",
-    culture: "பண்பாடு"
-  };
-
-  const clean = word.toLowerCase().replace(/[^a-z]/g, "");
-  return dictionary[clean] || word;
-};
-
-const translateText = (text) => {
-  if (!text) return "";
-  const words = text.split(/\s+/);
-  const translated = words.map(translateWord);
-  return translated.join(" ");
-};
+import aboutData from "@/data/about.json";
+import teamData from "@/data/team.json";
+import contactData from "@/data/contact.json";
 
 export default function AdminDashboard() {
-  const [issues, setIssues] = useState(issuesData);
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editIssueId, setEditIssueId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [lang, setLang] = useState("ta");
-  
-  // Form State
-  const [formData, setFormData] = useState({
+  const [notification, setNotification] = useState("");
+
+  // Content states
+  const [issues, setIssues] = useState(issuesData);
+  const [translations, setTranslations] = useState(issueTranslations);
+  const [about, setAbout] = useState(aboutData);
+  const [team, setTeam] = useState(teamData);
+  const [contact, setContact] = useState(contactData);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Modals state
+  const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+  const [editIssueId, setEditIssueId] = useState(null);
+
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [editTeamId, setEditTeamId] = useState(null);
+
+  const [isTimelineModalOpen, setIsTimelineModalOpen] = useState(false);
+  const [editTimelineIdx, setEditTimelineIdx] = useState(null);
+
+  // Debounced translation trigger indicator
+  const [isTranslating, setIsTranslating] = useState(false);
+
+  // Forms states
+  const [issueForm, setIssueForm] = useState({
     titleEn: "",
     titleTa: "",
     monthEn: "",
@@ -94,205 +52,43 @@ export default function AdminDashboard() {
     pages: 48,
     descriptionEn: "",
     descriptionTa: "",
-    coverImage: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&h=800&fit=crop",
-    pdfUrl: "/pdf/dummy_issue.pdf",
+    coverImage: "/coming_soon_cover.jpg",
+    pdfUrl: "",
     featuresEn: "",
-    featuresTa: ""
+    featuresTa: "",
+    comingSoon: true
   });
 
-  const [notification, setNotification] = useState("");
-  const [isTranslating, setIsTranslating] = useState(false);
+  const [teamForm, setTeamForm] = useState({
+    name: "",
+    role: "",
+    description: "",
+    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
+  });
 
-  // Debounced API translation for Title
-  useEffect(() => {
-    if (!formData.titleEn.trim()) {
-      setFormData(prev => ({ ...prev, titleTa: "" }));
-      return;
+  const [timelineForm, setTimelineForm] = useState({
+    year: "",
+    title: "",
+    description: ""
+  });
+
+  // Global save trigger
+  const saveContent = async (type, payload) => {
+    try {
+      const res = await fetch("/api/admin/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, data: payload }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save data");
+      showNotification(lang === "ta" ? "மாற்றங்கள் சேமிக்கப்பட்டன!" : "Changes saved successfully!");
+      return true;
+    } catch (err) {
+      console.error(err);
+      alert("Error saving: " + err.message);
+      return false;
     }
-
-    setIsTranslating(true);
-    const delayDebounceFn = setTimeout(async () => {
-      try {
-        const response = await fetch(
-          `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ta&dt=t&q=${encodeURIComponent(
-            formData.titleEn
-          )}`
-        );
-        const data = await response.json();
-        if (data && data[0] && data[0][0] && data[0][0][0]) {
-          setFormData((prev) => ({
-            ...prev,
-            titleTa: data[0][0][0],
-          }));
-        }
-      } catch (err) {
-        setFormData((prev) => ({
-          ...prev,
-          titleTa: translateText(prev.titleEn),
-        }));
-      } finally {
-        setIsTranslating(false);
-      }
-    }, 800);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [formData.titleEn]);
-
-  // Debounced API translation for Month
-  useEffect(() => {
-    if (!formData.monthEn.trim()) {
-      setFormData(prev => ({ ...prev, monthTa: "" }));
-      return;
-    }
-
-    const delayDebounceFn = setTimeout(async () => {
-      try {
-        const response = await fetch(
-          `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ta&dt=t&q=${encodeURIComponent(
-            formData.monthEn
-          )}`
-        );
-        const data = await response.json();
-        if (data && data[0] && data[0][0] && data[0][0][0]) {
-          setFormData((prev) => ({
-            ...prev,
-            monthTa: data[0][0][0],
-          }));
-        }
-      } catch (err) {
-        setFormData((prev) => ({
-          ...prev,
-          monthTa: translateMonth(prev.monthEn),
-        }));
-      }
-    }, 800);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [formData.monthEn]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleCreateOrEdit = (e) => {
-    e.preventDefault();
-
-    if (!formData.titleTa || !formData.titleEn || !formData.monthTa || !formData.monthEn) {
-      alert(lang === "ta" ? "தமிழ் மற்றும் ஆங்கில தலைப்புகள்/மாதங்கள் தேவை" : "Tamil and English titles/months are required");
-      return;
-    }
-
-    const featuresTaList = formData.featuresTa
-      ? formData.featuresTa.split(",").map((f) => f.trim())
-      : ["சிறப்புக் கட்டுரை"];
-    
-    const featuresEnList = formData.featuresEn
-      ? formData.featuresEn.split(",").map((f) => f.trim())
-      : ["Featured Article"];
-
-    if (editIssueId) {
-      setIssues((prev) =>
-        prev.map((i) =>
-          i.id === editIssueId
-            ? {
-                ...i,
-                title: formData.titleTa,
-                titleEn: formData.titleEn,
-                month: formData.monthTa,
-                monthEn: formData.monthEn,
-                pages: parseInt(formData.pages),
-                description: formData.descriptionTa,
-                descriptionEn: formData.descriptionEn,
-                coverImage: formData.coverImage,
-                pdfUrl: formData.pdfUrl,
-                features: featuresTaList,
-                featuresEn: featuresEnList
-              }
-            : i
-        )
-      );
-      showNotification(
-        lang === "ta" ? "இதழ் வெற்றிகரமாக மாற்றப்பட்டது!" : "Issue updated successfully!"
-      );
-    } else {
-      const newIssue = {
-        id: `v1-i${issues.length + 1}`,
-        title: formData.titleTa,
-        titleEn: formData.titleEn,
-        month: formData.monthTa,
-        monthEn: formData.monthEn,
-        date: new Date().toISOString().split("T")[0],
-        coverImage: formData.coverImage,
-        description: formData.descriptionTa,
-        descriptionEn: formData.descriptionEn,
-        pdfUrl: formData.pdfUrl,
-        isLatest: false,
-        pages: parseInt(formData.pages),
-        features: featuresTaList,
-        featuresEn: featuresEnList
-      };
-      setIssues((prev) => [newIssue, ...prev]);
-      showNotification(
-        lang === "ta"
-          ? "புதிய இதழ் வெற்றிகரமாக சேர்க்கப்பட்டது!"
-          : "New Issue created successfully!"
-      );
-    }
-
-    closeModal();
-  };
-
-  const handleDelete = (id) => {
-    const confirmMsg = lang === "ta" 
-      ? "இந்த இதழை நீக்க விரும்புகிறீர்களா?" 
-      : "Are you sure you want to delete this issue?";
-    if (confirm(confirmMsg)) {
-      setIssues((prev) => prev.filter((i) => i.id !== id));
-      showNotification(lang === "ta" ? "இதழ் நீக்கப்பட்டது" : "Issue deleted successfully.");
-    }
-  };
-
-  const openCreateModal = () => {
-    setEditIssueId(null);
-    setFormData({
-      titleEn: "",
-      titleTa: "",
-      monthEn: "",
-      monthTa: "",
-      pages: 48,
-      descriptionEn: "",
-      descriptionTa: "",
-      coverImage: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&h=800&fit=crop",
-      pdfUrl: "/pdf/dummy_issue.pdf",
-      featuresEn: "",
-      featuresTa: ""
-    });
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (issue) => {
-    setEditIssueId(issue.id);
-    const trans = issueTranslations[issue.id] || {};
-    setFormData({
-      titleEn: issue.titleEn || trans.title || issue.title,
-      titleTa: issue.title,
-      monthEn: issue.monthEn || trans.month || issue.month,
-      monthTa: issue.month,
-      pages: issue.pages,
-      descriptionEn: issue.descriptionEn || trans.description || "",
-      descriptionTa: issue.description || "",
-      coverImage: issue.coverImage,
-      pdfUrl: issue.pdfUrl,
-      featuresEn: issue.featuresEn ? issue.featuresEn.join(", ") : (trans.features ? trans.features.join(", ") : ""),
-      featuresTa: issue.features ? issue.features.join(", ") : ""
-    });
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditIssueId(null);
   };
 
   const showNotification = (msg) => {
@@ -300,169 +96,391 @@ export default function AdminDashboard() {
     setTimeout(() => setNotification(""), 3000);
   };
 
-  const filteredIssues = issues.filter((i) => {
-    const tTrans = issueTranslations[i.id] || {};
-    const titleVal = lang === "en" ? (i.titleEn || tTrans.title || i.title) : i.title;
-    const monthVal = lang === "en" ? (i.monthEn || tTrans.month || i.month) : i.month;
-    return (
-      titleVal.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      monthVal.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
+  // Translate helper (API fallback)
+  const autoTranslateText = async (text, setter, fallbackText = "") => {
+    if (!text.trim()) {
+      setter("");
+      return;
+    }
+    setIsTranslating(true);
+    try {
+      const response = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ta&dt=t&q=${encodeURIComponent(text)}`
+      );
+      const data = await response.json();
+      if (data && data[0] && data[0][0] && data[0][0][0]) {
+        setter(data[0][0][0]);
+      } else {
+        setter(fallbackText || text);
+      }
+    } catch (err) {
+      setter(fallbackText || text);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
 
-  // Localization Dictionary
+  // Issue title translation trigger
+  useEffect(() => {
+    if (activeTab === "issues" && isIssueModalOpen && !editIssueId) {
+      const timer = setTimeout(() => {
+        autoTranslateText(issueForm.titleEn, (val) => setIssueForm(prev => ({ ...prev, titleTa: val })));
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [issueForm.titleEn]);
+
+  // Handle Input Changes
+  const handleIssueInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setIssueForm(prev => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value
+    }));
+  };
+
+  // ISSUE CRUD
+  const openCreateIssue = () => {
+    setEditIssueId(null);
+    setIssueForm({
+      titleEn: "",
+      titleTa: "",
+      monthEn: "",
+      monthTa: "",
+      pages: 0,
+      descriptionEn: "",
+      descriptionTa: "",
+      coverImage: "/coming_soon_cover.jpg",
+      pdfUrl: "",
+      featuresEn: "",
+      featuresTa: "",
+      comingSoon: true
+    });
+    setIsIssueModalOpen(true);
+  };
+
+  const openEditIssue = (issue) => {
+    setEditIssueId(issue.id);
+    const trans = translations[issue.id] || {};
+    setIssueForm({
+      titleEn: issue.titleEn || trans.title || issue.title,
+      titleTa: issue.title,
+      monthEn: issue.monthEn || trans.month || issue.month,
+      monthTa: issue.month,
+      pages: issue.pages || 0,
+      descriptionEn: issue.descriptionEn || trans.description || "",
+      descriptionTa: issue.description || "",
+      coverImage: issue.coverImage,
+      pdfUrl: issue.pdfUrl || "",
+      featuresEn: issue.featuresEn ? issue.featuresEn.join(", ") : (trans.features ? trans.features.join(", ") : ""),
+      featuresTa: issue.features ? issue.features.join(", ") : "",
+      comingSoon: issue.comingSoon || false
+    });
+    setIsIssueModalOpen(true);
+  };
+
+  const handleIssueSubmit = async (e) => {
+    e.preventDefault();
+    const featEn = issueForm.featuresEn ? issueForm.featuresEn.split(",").map(f => f.trim()) : [];
+    const featTa = issueForm.featuresTa ? issueForm.featuresTa.split(",").map(f => f.trim()) : [];
+
+    let updatedIssues;
+    let updatedTranslations = { ...translations };
+
+    if (editIssueId) {
+      updatedIssues = issues.map(i => i.id === editIssueId ? {
+        ...i,
+        title: issueForm.titleTa,
+        titleEn: issueForm.titleEn,
+        month: issueForm.monthTa,
+        monthEn: issueForm.monthEn,
+        pages: parseInt(issueForm.pages),
+        description: issueForm.descriptionTa,
+        descriptionEn: issueForm.descriptionEn,
+        coverImage: issueForm.coverImage,
+        pdfUrl: issueForm.pdfUrl,
+        features: featTa,
+        featuresEn: featEn,
+        comingSoon: issueForm.comingSoon
+      } : i);
+
+      updatedTranslations[editIssueId] = {
+        title: issueForm.titleEn,
+        month: issueForm.monthEn,
+        description: issueForm.descriptionEn,
+        features: featEn
+      };
+    } else {
+      const newId = `v1-i${issues.length + 1}`;
+      const newIssue = {
+        id: newId,
+        title: issueForm.titleTa,
+        titleEn: issueForm.titleEn,
+        month: issueForm.monthTa,
+        monthEn: issueForm.monthEn,
+        date: new Date().toISOString().split("T")[0],
+        coverImage: issueForm.coverImage,
+        description: issueForm.descriptionTa,
+        descriptionEn: issueForm.descriptionEn,
+        pdfUrl: issueForm.pdfUrl,
+        isLatest: issues.length === 0,
+        pages: parseInt(issueForm.pages),
+        features: featTa,
+        featuresEn: featEn,
+        comingSoon: issueForm.comingSoon
+      };
+
+      updatedIssues = [newIssue, ...issues];
+      updatedTranslations[newId] = {
+        title: issueForm.titleEn,
+        month: issueForm.monthEn,
+        description: issueForm.descriptionEn,
+        features: featEn
+      };
+    }
+
+    const success = await saveContent("issues", updatedIssues);
+    if (success) {
+      await saveContent("translations", updatedTranslations);
+      setIssues(updatedIssues);
+      setTranslations(updatedTranslations);
+      setIsIssueModalOpen(false);
+    }
+  };
+
+  const handleDeleteIssue = async (id) => {
+    if (confirm(lang === "ta" ? "இதனை நீக்க வேண்டுமா?" : "Delete this issue?")) {
+      const updated = issues.filter(i => i.id !== id);
+      const success = await saveContent("issues", updated);
+      if (success) setIssues(updated);
+    }
+  };
+
+  // TEAM CRUD
+  const openCreateTeam = () => {
+    setEditTeamId(null);
+    setTeamForm({
+      name: "",
+      role: "",
+      description: "",
+      photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
+    });
+    setIsTeamModalOpen(true);
+  };
+
+  const openEditTeam = (member) => {
+    setEditTeamId(member.id);
+    setTeamForm({
+      name: member.name,
+      role: member.role,
+      description: member.description,
+      photo: member.photo
+    });
+    setIsTeamModalOpen(true);
+  };
+
+  const handleTeamSubmit = async (e) => {
+    e.preventDefault();
+    let updated;
+    if (editTeamId) {
+      updated = team.map(m => m.id === editTeamId ? { ...m, ...teamForm } : m);
+    } else {
+      updated = [...team, { id: String(Date.now()), ...teamForm }];
+    }
+    const success = await saveContent("team", updated);
+    if (success) {
+      setTeam(updated);
+      setIsTeamModalOpen(false);
+    }
+  };
+
+  const handleDeleteTeam = async (id) => {
+    if (confirm(lang === "ta" ? "ஆசிரியரை நீக்க வேண்டுமா?" : "Delete this team member?")) {
+      const updated = team.filter(m => m.id !== id);
+      const success = await saveContent("team", updated);
+      if (success) setTeam(updated);
+    }
+  };
+
+  // TIMELINE CRUD
+  const openCreateTimeline = () => {
+    setEditTimelineIdx(null);
+    setTimelineForm({ year: "", title: "", description: "" });
+    setIsTimelineModalOpen(true);
+  };
+
+  const openEditTimeline = (item, idx) => {
+    setEditTimelineIdx(idx);
+    setTimelineForm({
+      year: item.year,
+      title: item.title,
+      description: item.description
+    });
+    setIsTimelineModalOpen(true);
+  };
+
+  const handleTimelineSubmit = async (e) => {
+    e.preventDefault();
+    let updatedList = [...about.timeline];
+    if (editTimelineIdx !== null) {
+      updatedList[editTimelineIdx] = timelineForm;
+    } else {
+      updatedList.push(timelineForm);
+    }
+
+    const updatedAbout = { ...about, timeline: updatedList };
+    const success = await saveContent("about", updatedAbout);
+    if (success) {
+      setAbout(updatedAbout);
+      setIsTimelineModalOpen(false);
+    }
+  };
+
+  const handleDeleteTimeline = async (idx) => {
+    if (confirm(lang === "ta" ? "மைல்கல்லை நீக்க வேண்டுமா?" : "Delete this timeline event?")) {
+      const updatedList = about.timeline.filter((_, i) => i !== idx);
+      const updatedAbout = { ...about, timeline: updatedList };
+      const success = await saveContent("about", updatedAbout);
+      if (success) setAbout(updatedAbout);
+    }
+  };
+
+  // ABOUT SAVE
+  const handleAboutSubmit = async (e) => {
+    e.preventDefault();
+    await saveContent("about", about);
+  };
+
+  // CONTACT SAVE
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    await saveContent("contact", contact);
+  };
+
+  // Local Dictionary
   const t = {
     ta: {
-      adminTitle: "நிர்வாகக் குழு",
-      portal: "நிர்வாகப் பகுதி",
-      dashboard: "முகப்பு பலகை",
-      issues: "இதழ்கள்",
+      portal: "நிர்வாகக் கட்டுப்பாட்டு பலகை",
+      dashboard: "முகப்பு சுருக்கம்",
+      issues: "இதழ்கள் மேலாண்மை",
+      about: "பக்க விபரங்கள்",
+      team: "ஆசிரியர்க்குழு",
+      contact: "தொடர்பு விபரங்கள்",
       subscribers: "சந்தாதாரர்கள்",
       logout: "வெளியேற",
       secure: "பாதுகாப்பானது",
       totalIssues: "மொத்த இதழ்கள்",
-      thisMonth: "+1 இந்த மாதம்",
-      downloads: "பதிவிறக்கங்கள்",
-      lastWeek: "+12% கடந்த வாரம்",
       activeReaders: "வாசகர்கள்",
-      growth: "+24% வளர்ச்சி",
-      writers: "ஆசிரியர்கள்",
-      boardMembers: "ஆசிரியர்க்குழு",
-      recentSummary: "சமீபத்திய இதழ்கள் சுருக்கம்",
-      quickSubs: "சந்தாதாரர்கள் விரைவு பட்டியல்",
-      cover: "அட்டை",
-      month: "மாதம்",
-      issueTitle: "இதழ் தலைப்பு",
-      pages: "பக்கங்கள்",
-      actions: "செயல்கள்",
-      active: "செயலில்",
-      addIssue: "புதிய இதழைச் சேர்",
-      search: "தேடுக...",
-      save: "சேமிக்க",
-      cancel: "ரத்து செய்க",
-      editIssue: "இதழைத் திருத்துக",
-      email: "மின்னஞ்சல் விபரம்",
-      date: "பதிவு தேதி",
+      saveChanges: "மாற்றங்களைச் சேமி",
+      add: "புதியது சேர்",
+      edit: "திருத்து",
+      delete: "நீக்கு",
+      cancel: "ரத்து செய்",
+      email: "மின்னஞ்சல் முகவரி",
       status: "நிலை",
-      edit: "திருத்து"
+      timeline: "காலவரிசை மைல்கற்கள்",
+      officeAddress: "அலுவலக முகவரி (தமிழ்)",
+      officeAddressEn: "அலுவலக முகவரி (ஆங்கிலம்)",
+      phone: "தொலைபேசி",
+      socialLinks: "சமூக வலைத்தள இணைப்புகள்",
+      mission: "எமது நோக்கம் (தமிழ்)",
+      vision: "எமது பார்வை (தமிழ்)",
+      story: "எமது வரலாறு (தமிழ்)"
     },
     en: {
-      adminTitle: "Admin Panel",
-      portal: "Admin Dashboard",
-      dashboard: "Dashboard",
-      issues: "Issues",
+      portal: "Admin Control Dashboard",
+      dashboard: "Dashboard Overview",
+      issues: "Manage Issues",
+      about: "About Page Content",
+      team: "Editorial Board Team",
+      contact: "Contact & Socials",
       subscribers: "Subscribers",
       logout: "Logout",
       secure: "Secure",
       totalIssues: "Total Issues",
-      thisMonth: "+1 this month",
-      downloads: "Downloads",
-      lastWeek: "+12% last week",
       activeReaders: "Active Readers",
-      growth: "+24% Growth",
-      writers: "Editors",
-      boardMembers: "Active Editors",
-      recentSummary: "Recent Issues Summary",
-      quickSubs: "Subscribers Quick List",
-      cover: "Cover",
-      month: "Month",
-      issueTitle: "Issue Title",
-      pages: "Pages",
-      actions: "Actions",
-      active: "Active",
-      addIssue: "Add New Issue",
-      search: "Search...",
-      save: "Save Changes",
+      saveChanges: "Save Changes",
+      add: "Add New",
+      edit: "Edit",
+      delete: "Delete",
       cancel: "Cancel",
-      editIssue: "Edit Issue Details",
       email: "Subscriber Email",
-      date: "Date Subscribed",
       status: "Status",
-      edit: "Edit"
+      timeline: "Timeline Milestones",
+      officeAddress: "Office Address (Tamil)",
+      officeAddressEn: "Office Address (English)",
+      phone: "Phone Number",
+      socialLinks: "Social Links",
+      mission: "Our Mission (Tamil)",
+      vision: "Our Vision (Tamil)",
+      story: "Our Story (Tamil)"
     }
   }[lang];
 
   return (
     <div className="min-h-screen bg-canvas flex flex-col md:flex-row text-charcoal">
       
-      {/* 1. SIDEBAR NAVIGATION */}
+      {/* 1. SIDEBAR */}
       <aside className="w-full md:w-64 bg-charcoal text-white flex flex-col md:justify-between shrink-0">
-        <div className="flex flex-col w-full">
-          {/* Header */}
-          <div className="p-4 md:p-6 border-b border-white/10 flex items-center justify-between md:justify-start space-x-2">
+        <div>
+          <div className="p-4 md:p-6 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <img
                 src="/logo/vadachennai%20kural%20logo.jpg"
-                alt="Vadachennai Kural Logo"
+                alt="Logo"
                 className="w-8 h-8 rounded-full object-cover shadow-sm"
               />
               <div className="flex flex-col">
                 <span className="font-serif text-sm font-bold text-white tracking-wide">
-                  {t.adminTitle}
+                  {lang === "ta" ? "நிர்வாகக் குழு" : "Admin Panel"}
                 </span>
-                <span className="text-[8px] text-secondary font-bold uppercase tracking-wider -mt-1">
+                <span className="text-[8px] text-secondary font-bold uppercase tracking-wider">
                   Vadachennai Kural
                 </span>
               </div>
             </div>
-            <Link href="/" className="md:hidden p-2 text-white/60 hover:text-red-400">
-              <LogOut className="w-4 h-4" />
-            </Link>
           </div>
 
-          {/* Navigation Links */}
           <nav className="p-2 md:p-4 flex md:flex-col overflow-x-auto md:overflow-visible gap-1 w-full border-b border-white/10 md:border-b-0">
-            <button
-              onClick={() => setActiveTab("dashboard")}
-              className={`flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2.5 px-4 py-2.5 md:py-3 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-                activeTab === "dashboard" ? "bg-primary text-white" : "text-white/70 hover:bg-white/5 hover:text-white"
-              }`}
-            >
-              <LayoutDashboard className="w-4 h-4 shrink-0" /> <span className="inline">{t.dashboard}</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("issues")}
-              className={`flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2.5 px-4 py-2.5 md:py-3 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-                activeTab === "issues" ? "bg-primary text-white" : "text-white/70 hover:bg-white/5 hover:text-white"
-              }`}
-            >
-              <BookOpen className="w-4 h-4 shrink-0" /> <span className="inline">{t.issues}</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("subscribers")}
-              className={`flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2.5 px-4 py-2.5 md:py-3 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-                activeTab === "subscribers" ? "bg-primary text-white" : "text-white/70 hover:bg-white/5 hover:text-white"
-              }`}
-            >
-              <Users className="w-4 h-4 shrink-0" /> <span className="inline">{t.subscribers}</span>
-            </button>
+            {[
+              { id: "dashboard", label: t.dashboard, icon: LayoutDashboard },
+              { id: "issues", label: t.issues, icon: BookOpen },
+              { id: "about", label: t.about, icon: Info },
+              { id: "team", label: t.team, icon: Users2 },
+              { id: "contact", label: t.contact, icon: Globe },
+              { id: "subscribers", label: t.subscribers, icon: Users },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                    activeTab === tab.id ? "bg-primary text-white" : "text-white/70 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0" /> <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </nav>
         </div>
 
-        {/* Footer Logout */}
-        <div className="hidden md:block p-4 border-t border-white/10">
-          <Link
-            href="/"
-            className="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-xs font-bold text-red-400 hover:bg-red-500/10 hover:text-red-300 transition"
-          >
+        <div className="p-4 border-t border-white/10 hidden md:block">
+          <Link href="/" className="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold text-red-400 hover:bg-red-500/10 transition">
             <LogOut className="w-4 h-4" /> {t.logout}
           </Link>
         </div>
       </aside>
 
-      {/* 2. MAIN CONTENT AREA */}
+      {/* 2. MAIN */}
       <main className="flex-1 overflow-y-auto">
-        <header className="bg-white border-b border-border-subtle py-4 px-6 sm:px-8 flex items-center justify-between shadow-sm">
-          <h2 className="font-serif text-sm sm:text-lg font-bold text-charcoal truncate">
-            {activeTab === "dashboard" && t.portal}
-            {activeTab === "issues" && t.issues}
-            {activeTab === "subscribers" && t.subscribers}
-          </h2>
-
-          <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
+        <header className="bg-white border-b border-border-subtle py-4 px-6 flex items-center justify-between shadow-sm">
+          <h2 className="font-serif text-sm sm:text-base font-bold text-charcoal">{t.portal}</h2>
+          <div className="flex items-center space-x-2">
             <button
               onClick={() => setLang(prev => prev === "ta" ? "en" : "ta")}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border-subtle hover:border-primary text-[10px] sm:text-xs font-semibold hover:bg-canvas transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-subtle hover:border-primary text-xs font-semibold hover:bg-canvas transition cursor-pointer"
             >
               <Languages className="w-3.5 h-3.5 text-primary" /> {lang === "ta" ? "English" : "தமிழ்"}
             </button>
@@ -473,171 +491,105 @@ export default function AdminDashboard() {
         </header>
 
         {notification && (
-          <div className="fixed bottom-6 right-6 z-50 bg-charcoal text-white border border-secondary/30 px-5 py-3.5 rounded-lg text-xs font-bold flex items-center gap-2 shadow-2xl">
+          <div className="fixed bottom-6 right-6 z-50 bg-charcoal text-white px-5 py-3 rounded-lg text-xs font-bold flex items-center gap-2 shadow-2xl">
             <CheckCircle className="w-4 h-4 text-emerald-400" /> {notification}
           </div>
         )}
 
-        <div className="p-4 sm:p-8 w-full space-y-6">
-          {/* TAB 1: OVERVIEW DASHBOARD */}
+        <div className="p-4 sm:p-8 space-y-8 max-w-5xl">
+          
+          {/* TAB: DASHBOARD */}
           {activeTab === "dashboard" && (
-            <>
-              {/* Stat Cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                <div className="bg-white p-4 sm:p-6 rounded-xl border border-border-subtle shadow-sm">
-                  <div className="flex justify-between items-start mb-2 sm:mb-4">
-                    <span className="text-[9px] sm:text-[10px] font-sans font-bold text-charcoal/40 uppercase tracking-wider">{t.totalIssues}</span>
-                    <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-charcoal/40 font-bold uppercase tracking-wider block">{t.totalIssues}</span>
+                    <h3 className="text-2xl font-serif font-black mt-1">{issues.length}</h3>
                   </div>
-                  <h3 className="font-serif text-xl sm:text-3xl font-bold">{issues.length}</h3>
-                  <span className="text-[9px] sm:text-[10px] text-emerald-600 font-semibold block mt-1">{t.thisMonth}</span>
+                  <BookOpen className="w-8 h-8 text-primary opacity-80" />
                 </div>
-
-                <div className="bg-white p-4 sm:p-6 rounded-xl border border-border-subtle shadow-sm">
-                  <div className="flex justify-between items-start mb-2 sm:mb-4">
-                    <span className="text-[9px] sm:text-[10px] font-sans font-bold text-charcoal/40 uppercase tracking-wider">{t.downloads}</span>
-                    <Download className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
+                <div className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-charcoal/40 font-bold uppercase tracking-wider block">{t.activeReaders}</span>
+                    <h3 className="text-2xl font-serif font-black mt-1">2,840</h3>
                   </div>
-                  <h3 className="font-serif text-xl sm:text-3xl font-bold">6,840</h3>
-                  <span className="text-[9px] sm:text-[10px] text-emerald-600 font-semibold block mt-1">{t.lastWeek}</span>
+                  <Users className="w-8 h-8 text-secondary opacity-80" />
                 </div>
-
-                <div className="bg-white p-4 sm:p-6 rounded-xl border border-border-subtle shadow-sm">
-                  <div className="flex justify-between items-start mb-2 sm:mb-4">
-                    <span className="text-[9px] sm:text-[10px] font-sans font-bold text-charcoal/40 uppercase tracking-wider">{t.activeReaders}</span>
-                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <div className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-charcoal/40 font-bold uppercase tracking-wider block">{lang === "ta" ? "ஆசிரியர்கள் குழு" : "Board Editors"}</span>
+                    <h3 className="text-2xl font-serif font-black mt-1">{team.length}</h3>
                   </div>
-                  <h3 className="font-serif text-xl sm:text-3xl font-bold">1,450</h3>
-                  <span className="text-[9px] sm:text-[10px] text-emerald-600 font-semibold block mt-1">{t.growth}</span>
-                </div>
-
-                <div className="bg-white p-4 sm:p-6 rounded-xl border border-border-subtle shadow-sm">
-                  <div className="flex justify-between items-start mb-2 sm:mb-4">
-                    <span className="text-[9px] sm:text-[10px] font-sans font-bold text-charcoal/40 uppercase tracking-wider">{t.writers}</span>
-                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
-                  </div>
-                  <h3 className="font-serif text-xl sm:text-3xl font-bold">4</h3>
-                  <span className="text-[9px] sm:text-[10px] text-charcoal/45 font-semibold block mt-1">{t.boardMembers}</span>
+                  <Users2 className="w-8 h-8 text-primary opacity-80" />
                 </div>
               </div>
 
-              {/* Grid Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
-                <div className="lg:col-span-8 bg-white rounded-xl border border-border-subtle shadow-sm p-4 sm:p-6 space-y-4">
-                  <h4 className="font-serif text-sm sm:text-base font-bold pb-2 border-b border-border-subtle">{t.recentSummary}</h4>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs text-left border-collapse min-w-[500px]">
-                      <thead>
-                        <tr className="border-b border-border-subtle text-charcoal/50">
-                          <th className="py-2.5 font-bold">{t.month}</th>
-                          <th className="py-2.5 font-bold">{t.issueTitle}</th>
-                          <th className="py-2.5 font-bold text-center">{t.pages}</th>
-                          <th className="py-2.5 font-bold text-right">{t.actions}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {issues.slice(0, 4).map((issue) => {
-                          const trans = issueTranslations[issue.id] || {};
-                          const displayMonth = lang === "en" ? (issue.monthEn || trans.month || issue.month) : issue.month;
-                          const displayTitle = lang === "en" ? (issue.titleEn || trans.title || issue.title) : issue.title;
-                          return (
-                            <tr key={issue.id} className="border-b border-border-subtle hover:bg-canvas/50">
-                              <td className="py-3 font-bold text-primary">{displayMonth}</td>
-                              <td className="py-3 font-medium">{displayTitle}</td>
-                              <td className="py-3 text-center font-sans">{issue.pages}</td>
-                              <td className="py-3 text-right">
-                                <button onClick={() => openEditModal(issue)} className="text-secondary hover:underline cursor-pointer">{t.edit}</button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div className="lg:col-span-4 bg-white rounded-xl border border-border-subtle shadow-sm p-4 sm:p-6 space-y-4">
-                  <h4 className="font-serif text-sm sm:text-base font-bold pb-2 border-b border-border-subtle">{t.quickSubs}</h4>
-                  <ul className="space-y-3.5 text-xs">
-                    <li className="flex items-center justify-between pb-2.5 border-b border-border-subtle/40">
-                      <div>
-                        <span className="font-semibold block">anbu@mail.com</span>
-                        <span className="text-[9px] text-charcoal/40">July 30, 2026</span>
-                      </div>
-                      <span className="text-[9px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100">{t.active}</span>
-                    </li>
-                    <li className="flex items-center justify-between">
-                      <div>
-                        <span className="font-semibold block">malar@example.com</span>
-                        <span className="text-[9px] text-charcoal/40">July 28, 2026</span>
-                      </div>
-                      <span className="text-[9px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100">{t.active}</span>
-                    </li>
-                  </ul>
+              {/* Quick Info Box */}
+              <div className="bg-white border border-border-subtle rounded-xl p-6 shadow-sm">
+                <h4 className="font-serif text-base font-bold mb-3 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-secondary" /> {lang === "ta" ? "தற்போதைய இதழ் நிலை" : "Current Magazine Status"}
+                </h4>
+                <p className="text-xs sm:text-sm text-charcoal/70 leading-relaxed font-light mb-4">
+                  {lang === "ta" 
+                    ? "வடசென்னை குரல் இணைய இதழ் தற்பொழுது அறிமுக நிலையில் அமைக்கப்பட்டுள்ளது. முதல் இதழ் 'விரைவில்' வெளியாகும் என அறிவிக்கப்பட்டுள்ளது. புதிய இதழ்களை மேலாண்மை செய்ய அல்லது இதர பக்க விபரங்களை மாற்ற அடுத்தடுத்த பக்கங்களைப் பயன்படுத்தவும்."
+                    : "Vadachennai Kural is currently configured in a pre-launch state with the first issue marked as 'Coming Soon'. Use the navigation tabs to configure issues, about pages, contact details, or view subscriber alerts."}
+                </p>
+                <div className="flex gap-3">
+                  <button onClick={() => setActiveTab("issues")} className="bg-primary text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-primary-dark transition cursor-pointer">
+                    {lang === "ta" ? "இதழ்களை மேலாண்மை செய்" : "Manage Issues"}
+                  </button>
+                  <button onClick={() => setActiveTab("about")} className="bg-canvas text-charcoal text-xs font-bold px-4 py-2 border border-border-subtle rounded-lg hover:bg-gray-100 transition cursor-pointer">
+                    {lang === "ta" ? "முகப்பு பக்கங்களை திருத்து" : "Edit Home Sections"}
+                  </button>
                 </div>
               </div>
-            </>
+            </div>
           )}
 
-          {/* TAB 2: ISSUES LIST */}
+          {/* TAB: ISSUES */}
           {activeTab === "issues" && (
-            <div className="bg-white rounded-xl border border-border-subtle shadow-sm p-4 sm:p-6 space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="relative w-full sm:max-w-xs">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t.search}
-                    className="w-full pl-9 pr-4 py-2.5 bg-canvas border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-xs"
-                  />
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/30" />
-                </div>
-
-                <Button onClick={openCreateModal} variant="primary" size="sm" className="flex items-center justify-center gap-1 cursor-pointer w-full sm:w-auto">
-                  <Plus className="w-4 h-4" /> {t.addIssue}
-                </Button>
+            <div className="space-y-6 bg-white p-6 rounded-xl border border-border-subtle shadow-sm">
+              <div className="flex items-center justify-between pb-4 border-b border-border-subtle">
+                <h3 className="font-serif text-base font-bold">{t.issues}</h3>
+                <button onClick={openCreateIssue} className="bg-primary hover:bg-primary-dark text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer">
+                  <Plus className="w-4 h-4" /> {lang === "ta" ? "புதிய இதழ் சேர்" : "Add Issue"}
+                </button>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse min-w-[600px]">
                   <thead>
                     <tr className="border-b border-border-subtle text-charcoal/50">
-                      <th className="py-2.5 font-bold">{t.cover}</th>
-                      <th className="py-2.5 font-bold">{t.month}</th>
-                      <th className="py-2.5 font-bold">{t.issueTitle}</th>
-                      <th className="py-2.5 font-bold text-center">{t.pages}</th>
-                      <th className="py-2.5 font-bold text-right">{t.actions}</th>
+                      <th className="py-2.5 font-bold">Cover</th>
+                      <th className="py-2.5 font-bold">Month</th>
+                      <th className="py-2.5 font-bold">Title</th>
+                      <th className="py-2.5 font-bold text-center">Status</th>
+                      <th className="py-2.5 font-bold text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredIssues.map((issue) => {
-                      const trans = issueTranslations[issue.id] || {};
-                      const displayMonth = lang === "en" ? (issue.monthEn || trans.month || issue.month) : issue.month;
-                      const displayTitle = lang === "en" ? (issue.titleEn || trans.title || issue.title) : issue.title;
+                    {issues.map((issue) => {
+                      const trans = translations[issue.id] || {};
+                      const title = lang === "en" ? (issue.titleEn || trans.title || issue.title) : issue.title;
+                      const month = lang === "en" ? (issue.monthEn || trans.month || issue.month) : issue.month;
                       return (
                         <tr key={issue.id} className="border-b border-border-subtle hover:bg-canvas/50">
                           <td className="py-3">
-                            <div className="w-8 h-10 relative overflow-hidden rounded shadow aspect-[3/4]">
+                            <div className="w-9 h-12 relative overflow-hidden rounded border bg-gray-100 shrink-0 shadow-sm aspect-[3/4]">
                               <img src={issue.coverImage} alt="" className="w-full h-full object-cover" />
                             </div>
                           </td>
-                          <td className="py-3 font-bold text-primary">{displayMonth}</td>
-                          <td className="py-3 font-medium">{displayTitle}</td>
-                          <td className="py-3 text-center font-sans">{issue.pages}</td>
+                          <td className="py-3 font-bold text-primary">{month}</td>
+                          <td className="py-3 font-medium">{title}</td>
+                          <td className="py-3 text-center">
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${issue.comingSoon ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-emerald-100 text-emerald-700 border border-emerald-200"}`}>
+                              {issue.comingSoon ? (lang === "ta" ? "விரைவில்" : "Coming Soon") : (lang === "ta" ? "வெளியானது" : "Published")}
+                            </span>
+                          </td>
                           <td className="py-3 text-right space-x-2">
-                            <button
-                              onClick={() => openEditModal(issue)}
-                              className="p-1.5 hover:bg-gray-100 rounded text-secondary transition cursor-pointer inline-flex"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(issue.id)}
-                              className="p-1.5 hover:bg-gray-100 rounded text-red-500 transition cursor-pointer inline-flex"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <button onClick={() => openEditIssue(issue)} className="p-1 text-secondary hover:bg-canvas rounded inline-flex border border-border-subtle cursor-pointer"><Edit2 className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => handleDeleteIssue(issue.id)} className="p-1 text-red-500 hover:bg-canvas rounded inline-flex border border-border-subtle cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
                           </td>
                         </tr>
                       );
@@ -648,10 +600,199 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* TAB 3: SUBSCRIBERS */}
+          {/* TAB: ABOUT PAGE CONTENT */}
+          {activeTab === "about" && (
+            <div className="space-y-6">
+              <form onSubmit={handleAboutSubmit} className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                  <h3 className="font-serif text-base font-bold">{t.about}</h3>
+                  <button type="submit" className="bg-primary hover:bg-primary-dark text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer">
+                    <Save className="w-4 h-4" /> {t.saveChanges}
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex flex-col space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">{t.mission}</label>
+                    <textarea
+                      value={about.mission}
+                      onChange={e => setAbout(prev => ({ ...prev, mission: e.target.value }))}
+                      rows="3"
+                      className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs font-sans focus:outline-none focus:border-primary resize-none bg-canvas"
+                    />
+                  </div>
+
+                  <div className="flex flex-col space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">{t.vision}</label>
+                    <textarea
+                      value={about.vision}
+                      onChange={e => setAbout(prev => ({ ...prev, vision: e.target.value }))}
+                      rows="3"
+                      className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs font-sans focus:outline-none focus:border-primary resize-none bg-canvas"
+                    />
+                  </div>
+
+                  <div className="flex flex-col space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">{t.story}</label>
+                    <textarea
+                      value={about.story}
+                      onChange={e => setAbout(prev => ({ ...prev, story: e.target.value }))}
+                      rows="5"
+                      className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs font-sans focus:outline-none focus:border-primary resize-none bg-canvas"
+                    />
+                  </div>
+                </div>
+              </form>
+
+              {/* TIMELINE LIST */}
+              <div className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                  <h3 className="font-serif text-base font-bold">{t.timeline}</h3>
+                  <button onClick={openCreateTimeline} className="bg-secondary text-charcoal hover:bg-secondary-hover text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer">
+                    <Plus className="w-4 h-4" /> {t.add}
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {about.timeline.map((item, idx) => (
+                    <div key={idx} className="flex items-start justify-between border border-border-subtle p-4 rounded-xl hover:shadow-sm transition bg-canvas/30">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-sans font-bold text-xs bg-primary text-white px-2 py-0.5 rounded">{item.year}</span>
+                          <h4 className="font-serif text-sm font-bold text-charcoal">{item.title}</h4>
+                        </div>
+                        <p className="text-xs text-charcoal/60 leading-relaxed font-light">{item.description}</p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button onClick={() => openEditTimeline(item, idx)} className="p-1 text-secondary hover:bg-canvas rounded border border-border-subtle cursor-pointer"><Edit2 className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleDeleteTimeline(idx)} className="p-1 text-red-500 hover:bg-canvas rounded border border-border-subtle cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: TEAM */}
+          {activeTab === "team" && (
+            <div className="space-y-6 bg-white p-6 rounded-xl border border-border-subtle shadow-sm">
+              <div className="flex items-center justify-between pb-4 border-b border-border-subtle">
+                <h3 className="font-serif text-base font-bold">{t.team}</h3>
+                <button onClick={openCreateTeam} className="bg-primary hover:bg-primary-dark text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer">
+                  <Plus className="w-4 h-4" /> {t.add}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {team.map((member) => (
+                  <div key={member.id} className="border border-border-subtle p-4 rounded-xl flex gap-4 bg-canvas/20 hover:shadow-sm transition">
+                    <div className="relative w-16 h-16 rounded-full overflow-hidden shrink-0 border border-border-subtle">
+                      <img src={member.photo} alt={member.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-serif text-sm font-bold text-charcoal">{member.name}</h4>
+                          <span className="text-[10px] text-primary font-bold uppercase tracking-wider font-sans">{member.role}</span>
+                        </div>
+                        <div className="flex space-x-1.5">
+                          <button onClick={() => openEditTeam(member)} className="p-1 text-secondary hover:bg-canvas rounded border border-border-subtle cursor-pointer"><Edit2 className="w-3 h-3" /></button>
+                          <button onClick={() => handleDeleteTeam(member.id)} className="p-1 text-red-500 hover:bg-canvas rounded border border-border-subtle cursor-pointer"><Trash2 className="w-3 h-3" /></button>
+                        </div>
+                      </div>
+                      <p className="text-xs text-charcoal/60 leading-relaxed font-light">{member.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB: CONTACT */}
+          {activeTab === "contact" && (
+            <form onSubmit={handleContactSubmit} className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+                <h3 className="font-serif text-base font-bold">{t.contact}</h3>
+                <button type="submit" className="bg-primary hover:bg-primary-dark text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer">
+                  <Save className="w-4 h-4" /> {t.saveChanges}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">{t.officeAddress}</label>
+                  <input
+                    type="text"
+                    value={contact.officeAddress}
+                    onChange={e => setContact(prev => ({ ...prev, officeAddress: e.target.value }))}
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs font-sans focus:outline-none focus:border-primary bg-canvas"
+                  />
+                </div>
+                <div className="flex flex-col space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">{t.officeAddressEn}</label>
+                  <input
+                    type="text"
+                    value={contact.officeAddressEn}
+                    onChange={e => setContact(prev => ({ ...prev, officeAddressEn: e.target.value }))}
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs font-sans focus:outline-none focus:border-primary bg-canvas"
+                  />
+                </div>
+                <div className="flex flex-col space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">{t.phone}</label>
+                  <input
+                    type="text"
+                    value={contact.phone}
+                    onChange={e => setContact(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs font-sans focus:outline-none focus:border-primary bg-canvas"
+                  />
+                </div>
+                <div className="flex flex-col space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">{lang === "ta" ? "மின்னஞ்சல்" : "Email"}</label>
+                  <input
+                    type="text"
+                    value={contact.email}
+                    onChange={e => setContact(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs font-sans focus:outline-none focus:border-primary bg-canvas"
+                  />
+                </div>
+                <div className="flex flex-col space-y-1.5 sm:col-span-2">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">{lang === "ta" ? "கூகுள் மேப் ஐபிரேம் URL" : "Google Map Embed Iframe URL"}</label>
+                  <input
+                    type="text"
+                    value={contact.mapEmbedUrl}
+                    onChange={e => setContact(prev => ({ ...prev, mapEmbedUrl: e.target.value }))}
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs font-sans focus:outline-none focus:border-primary bg-canvas"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-border-subtle pt-5 space-y-4">
+                <h4 className="font-serif text-sm font-bold">{t.socialLinks}</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {Object.keys(contact.socialLinks || {}).map((platform) => (
+                    <div key={platform} className="flex flex-col space-y-1.5">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">{platform}</label>
+                      <input
+                        type="text"
+                        value={contact.socialLinks[platform]}
+                        onChange={e => setContact(prev => {
+                          const updatedSocials = { ...prev.socialLinks, [platform]: e.target.value };
+                          return { ...prev, socialLinks: updatedSocials };
+                        })}
+                        className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs font-sans focus:outline-none focus:border-primary bg-canvas"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </form>
+          )}
+
+          {/* TAB: SUBSCRIBERS */}
           {activeTab === "subscribers" && (
-            <div className="bg-white rounded-xl border border-border-subtle shadow-sm p-4 sm:p-6 space-y-4">
-              <h3 className="font-serif text-sm sm:text-base font-bold pb-2 border-b border-border-subtle">
+            <div className="bg-white p-6 rounded-xl border border-border-subtle shadow-sm space-y-4">
+              <h3 className="font-serif text-base font-bold pb-2 border-b border-border-subtle">
                 {t.subscribers}
               </h3>
               <div className="overflow-x-auto">
@@ -659,7 +800,7 @@ export default function AdminDashboard() {
                   <thead>
                     <tr className="border-b border-border-subtle text-charcoal/50">
                       <th className="py-2.5 font-bold">{t.email}</th>
-                      <th className="py-2.5 font-bold">{t.date}</th>
+                      <th className="py-2.5 font-bold">Date Joined</th>
                       <th className="py-2.5 font-bold">{t.status}</th>
                     </tr>
                   </thead>
@@ -667,278 +808,319 @@ export default function AdminDashboard() {
                     <tr className="border-b border-border-subtle">
                       <td className="py-3 font-medium">anbu@mail.com</td>
                       <td className="py-3 font-sans text-charcoal/50">2026-07-30</td>
-                      <td className="py-3 text-emerald-600 font-bold">{t.active}</td>
+                      <td className="py-3"><span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100 text-[10px] font-semibold">Active</span></td>
                     </tr>
                     <tr className="border-b border-border-subtle">
                       <td className="py-3 font-medium">malar@example.com</td>
                       <td className="py-3 font-sans text-charcoal/50">2026-07-28</td>
-                      <td className="py-3 text-emerald-600 font-bold">{t.active}</td>
+                      <td className="py-3"><span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100 text-[10px] font-semibold">Active</span></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
           )}
+
         </div>
       </main>
 
-      {/* 3. NEW/EDIT MODAL POPUP */}
-      {isModalOpen && (
+      {/* ISSUE CREATION/EDITING MODAL */}
+      {isIssueModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/40 backdrop-blur-sm">
           <div className="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-border-subtle flex flex-col max-h-[90vh]">
-            
-            {/* Header */}
             <div className="flex items-center justify-between border-b border-border-subtle p-5">
-              <h3 className="font-serif text-base sm:text-lg font-bold text-charcoal">
-                {editIssueId ? t.editIssue : t.addIssue}
+              <h3 className="font-serif text-base font-bold text-charcoal">
+                {editIssueId ? (lang === "ta" ? "இதழ் திருத்துக" : "Edit Issue") : (lang === "ta" ? "புதிய இதழ்" : "New Issue")}
               </h3>
-              <button onClick={closeModal} className="p-1 rounded-full hover:bg-gray-100 cursor-pointer">
+              <button onClick={() => setIsIssueModalOpen(false)} className="p-1 rounded-full hover:bg-gray-100 cursor-pointer">
                 <X className="w-5 h-5 text-gray-400" />
               </button>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleCreateOrEdit} className="p-5 sm:p-6 overflow-y-auto space-y-4">
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                
-                {/* LHS: Aspect ratio responsive live photo preview */}
+            <form onSubmit={handleIssueSubmit} className="p-5 sm:p-6 overflow-y-auto space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-start">
                 <div className="flex flex-col items-center space-y-2">
-                  <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/50">
-                    Live Cover Preview
-                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-charcoal/50">Cover Preview</span>
                   <div className="relative aspect-[3/4] w-full max-w-[150px] rounded-lg overflow-hidden border border-border-subtle shadow bg-gray-50 flex items-center justify-center">
-                    {formData.coverImage ? (
-                      <img 
-                        src={formData.coverImage} 
-                        alt="Preview" 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-[10px] text-charcoal/30 italic">No Cover</span>
-                    )}
+                    <img src={issueForm.coverImage} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                 </div>
 
-                {/* RHS: Inputs */}
-                <div className="md:col-span-2 space-y-4">
-                  {/* Titles */}
+                <div className="sm:col-span-2 space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col space-y-1.5">
-                      <label className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/70">
-                        Issue Title (English)
-                      </label>
+                    <div className="flex flex-col space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Issue Title (En)</label>
                       <input
                         type="text"
                         name="titleEn"
-                        value={formData.titleEn}
-                        onChange={handleInputChange}
-                        placeholder="e.g. Gana Music Heritage"
-                        className="w-full px-3 py-2 border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-xs font-sans"
+                        value={issueForm.titleEn}
+                        onChange={handleIssueInputChange}
+                        className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
+                        required
                       />
                     </div>
-                    <div className="flex flex-col space-y-1.5">
-                      <label className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/70">
-                        இதழ் தலைப்பு (Tamil Auto-translated)
-                      </label>
-                      <div className="relative flex items-center">
-                        <input
-                          type="text"
-                          name="titleTa"
-                          value={formData.titleTa}
-                          onChange={handleInputChange}
-                          placeholder={isTranslating ? "Translating..." : "உதாரணம்: கானா இசை மரபு"}
-                          className="w-full px-3 py-2 border border-primary/45 bg-primary/5 focus:border-primary focus:outline-none rounded-lg text-xs font-semibold text-primary"
-                        />
-                        {isTranslating && (
-                          <span className="absolute right-3 flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                          </span>
-                        )}
-                      </div>
+                    <div className="flex flex-col space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">இதழ் தலைப்பு (Ta)</label>
+                      <input
+                        type="text"
+                        name="titleTa"
+                        value={issueForm.titleTa}
+                        onChange={handleIssueInputChange}
+                        className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary font-semibold text-primary"
+                        required
+                      />
                     </div>
                   </div>
 
-                  {/* Months */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col space-y-1.5">
-                      <label className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/70">
-                        Month Name (English)
-                      </label>
+                    <div className="flex flex-col space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Month (En)</label>
                       <input
                         type="text"
                         name="monthEn"
-                        value={formData.monthEn}
-                        onChange={handleInputChange}
-                        placeholder="e.g. July 2026"
-                        className="w-full px-3 py-2 border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-xs font-sans"
+                        value={issueForm.monthEn}
+                        onChange={handleIssueInputChange}
+                        placeholder="e.g. September 2026"
+                        className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
+                        required
                       />
                     </div>
-                    <div className="flex flex-col space-y-1.5">
-                      <label className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/70">
-                        வெளியீட்டு மாதம் (Tamil Auto-translated)
-                      </label>
+                    <div className="flex flex-col space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">மாதம் (Ta)</label>
                       <input
                         type="text"
                         name="monthTa"
-                        value={formData.monthTa}
-                        onChange={handleInputChange}
-                        placeholder="உதாரணம்: ஜூலை 2026"
-                        className="w-full px-3 py-2 border border-primary/45 bg-primary/5 focus:border-primary focus:outline-none rounded-lg text-xs font-semibold text-primary"
+                        value={issueForm.monthTa}
+                        onChange={handleIssueInputChange}
+                        placeholder="உதாரணம்: செப்டம்பர் 2026"
+                        className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
+                        required
                       />
                     </div>
                   </div>
                 </div>
-
               </div>
 
-              {/* Uploads and Details */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="flex flex-col space-y-1.5">
-                  <label className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/70">
-                    Pages Count
-                  </label>
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Pages</label>
                   <input
                     type="number"
                     name="pages"
-                    value={formData.pages}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-xs font-sans"
+                    value={issueForm.pages}
+                    onChange={handleIssueInputChange}
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
                   />
                 </div>
-                <div className="flex flex-col space-y-1.5">
-                  <label className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/70">
-                    Cover Image URL or File
-                  </label>
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Cover Image URL</label>
                   <input
                     type="text"
                     name="coverImage"
-                    value={formData.coverImage}
-                    onChange={handleInputChange}
-                    placeholder="https://..."
-                    className="w-full px-3 py-2 border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-xs font-sans mb-1"
-                  />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        setFormData((prev) => ({
-                          ...prev,
-                          coverImage: URL.createObjectURL(file)
-                        }));
-                      }
-                    }}
-                    className="w-full px-2 py-1 border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-[9px] bg-canvas cursor-pointer"
+                    value={issueForm.coverImage}
+                    onChange={handleIssueInputChange}
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
                   />
                 </div>
-                <div className="flex flex-col space-y-1.5">
-                  <label className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/70">
-                    PDF URL or File
-                  </label>
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">PDF URL</label>
                   <input
                     type="text"
                     name="pdfUrl"
-                    value={formData.pdfUrl}
-                    onChange={handleInputChange}
-                    placeholder="/pdf/..."
-                    className="w-full px-3 py-2 border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-xs font-sans mb-1"
-                  />
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        setFormData((prev) => ({
-                          ...prev,
-                          pdfUrl: URL.createObjectURL(file)
-                        }));
-                      }
-                    }}
-                    className="w-full px-2 py-1 border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-[9px] bg-canvas cursor-pointer"
+                    value={issueForm.pdfUrl}
+                    onChange={handleIssueInputChange}
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
 
-              {/* Description inputs */}
+              <div className="flex items-center gap-2 py-1">
+                <input
+                  type="checkbox"
+                  id="comingSoon"
+                  name="comingSoon"
+                  checked={issueForm.comingSoon}
+                  onChange={handleIssueInputChange}
+                  className="w-4 h-4 text-primary focus:ring-primary border-border-subtle rounded"
+                />
+                <label htmlFor="comingSoon" className="text-xs font-bold text-charcoal/80 cursor-pointer">
+                  {lang === "ta" ? "அறிமுக நிலையில் உள்ளது (வெளியாகவில்லை)" : "Under Pre-launch status (Coming Soon)"}
+                </label>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col space-y-1.5">
-                  <label className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/70">
-                    Description Details (English)
-                  </label>
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Description (En)</label>
                   <textarea
                     name="descriptionEn"
-                    value={formData.descriptionEn}
-                    onChange={handleInputChange}
+                    value={issueForm.descriptionEn}
+                    onChange={handleIssueInputChange}
                     rows="3"
-                    placeholder="Details in English..."
-                    className="w-full px-3 py-2 border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-xs resize-none"
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary resize-none bg-canvas"
                   />
                 </div>
-                <div className="flex flex-col space-y-1.5">
-                  <label className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/70">
-                    இதழ் விபரம் (Tamil Description)
-                  </label>
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">விபரம் (Ta)</label>
                   <textarea
                     name="descriptionTa"
-                    value={formData.descriptionTa}
-                    onChange={handleInputChange}
+                    value={issueForm.descriptionTa}
+                    onChange={handleIssueInputChange}
                     rows="3"
-                    placeholder="தமிழ் இதழ் விபரம்..."
-                    className="w-full px-3 py-2 border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-xs resize-none"
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary resize-none bg-canvas"
                   />
                 </div>
               </div>
 
-              {/* Features / Highlights inputs */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col space-y-1.5">
-                  <label className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/70">
-                    Highlights (English - Comma separated list)
-                  </label>
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Highlights (En - comma separated)</label>
                   <input
                     type="text"
                     name="featuresEn"
-                    value={formData.featuresEn}
-                    onChange={handleInputChange}
-                    placeholder="Gana singers, Boxing, Ports"
-                    className="w-full px-3 py-2 border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-xs"
+                    value={issueForm.featuresEn}
+                    onChange={handleIssueInputChange}
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
                   />
                 </div>
-                <div className="flex flex-col space-y-1.5">
-                  <label className="text-[9px] font-sans font-bold uppercase tracking-wider text-charcoal/70">
-                    முக்கிய கட்டுரைகள் (Tamil - காற்புள்ளி பிரிப்பு)
-                  </label>
+                <div className="flex flex-col space-y-1">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">முக்கிய கட்டுரைகள் (Ta - காற்புள்ளி பிரிப்பு)</label>
                   <input
                     type="text"
                     name="featuresTa"
-                    value={formData.featuresTa}
-                    onChange={handleInputChange}
-                    placeholder="கானா பாடல்கள், சார்பட்டா பரம்பரை, ராயபுரம்"
-                    className="w-full px-3 py-2 border border-border-subtle focus:border-primary focus:outline-none rounded-lg text-xs"
+                    value={issueForm.featuresTa}
+                    onChange={handleIssueInputChange}
+                    className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="px-4 py-2 border border-border-subtle text-charcoal/70 hover:bg-gray-50 rounded-lg text-xs font-bold cursor-pointer"
-                >
-                  {t.cancel}
-                </button>
-                <Button type="submit" variant="primary" size="sm" className="cursor-pointer">
-                  {t.save}
-                </Button>
+                <button type="button" onClick={() => setIsIssueModalOpen(false)} className="px-4 py-2 border border-border-subtle rounded-lg text-xs font-bold hover:bg-gray-50">{t.cancel}</button>
+                <button type="submit" className="bg-primary text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-primary-dark">{lang === "ta" ? "சேமி" : "Save"}</button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* TEAM CREATION/EDITING MODAL */}
+      {isTeamModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl border border-border-subtle flex flex-col">
+            <div className="flex items-center justify-between border-b border-border-subtle p-5">
+              <h3 className="font-serif text-base font-bold text-charcoal">
+                {editTeamId ? (lang === "ta" ? "ஆசிரியர் திருத்தம்" : "Edit Board Member") : (lang === "ta" ? "புதிய ஆசிரியர்" : "Add Board Member")}
+              </h3>
+              <button onClick={() => setIsTeamModalOpen(false)} className="p-1 rounded-full hover:bg-gray-100 cursor-pointer">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleTeamSubmit} className="p-5 space-y-4">
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Name</label>
+                <input
+                  type="text"
+                  value={teamForm.name}
+                  onChange={e => setTeamForm(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
+                  required
+                />
+              </div>
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Role</label>
+                <input
+                  type="text"
+                  value={teamForm.role}
+                  onChange={e => setTeamForm(prev => ({ ...prev, role: e.target.value }))}
+                  className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
+                  required
+                />
+              </div>
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Description</label>
+                <textarea
+                  value={teamForm.description}
+                  onChange={e => setTeamForm(prev => ({ ...prev, description: e.target.value }))}
+                  rows="3"
+                  className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary resize-none bg-canvas"
+                  required
+                />
+              </div>
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Photo URL</label>
+                <input
+                  type="text"
+                  value={teamForm.photo}
+                  onChange={e => setTeamForm(prev => ({ ...prev, photo: e.target.value }))}
+                  className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
+                <button type="button" onClick={() => setIsTeamModalOpen(false)} className="px-4 py-2 border border-border-subtle rounded-lg text-xs font-bold hover:bg-gray-50">{t.cancel}</button>
+                <button type="submit" className="bg-primary text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-primary-dark">{lang === "ta" ? "சேமி" : "Save"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* TIMELINE CREATION/EDITING MODAL */}
+      {isTimelineModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/40 backdrop-blur-sm">
+          <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl border border-border-subtle flex flex-col">
+            <div className="flex items-center justify-between border-b border-border-subtle p-5">
+              <h3 className="font-serif text-base font-bold text-charcoal">
+                {editTimelineIdx !== null ? (lang === "ta" ? "மைல்கல் திருத்தம்" : "Edit Milestone") : (lang === "ta" ? "புதிய மைல்கல்" : "Add Milestone")}
+              </h3>
+              <button onClick={() => setIsTimelineModalOpen(false)} className="p-1 rounded-full hover:bg-gray-100 cursor-pointer">
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleTimelineSubmit} className="p-5 space-y-4">
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Year</label>
+                <input
+                  type="text"
+                  value={timelineForm.year}
+                  onChange={e => setTimelineForm(prev => ({ ...prev, year: e.target.value }))}
+                  placeholder="e.g. 2026"
+                  className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
+                  required
+                />
+              </div>
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Milestone Title</label>
+                <input
+                  type="text"
+                  value={timelineForm.title}
+                  onChange={e => setTimelineForm(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary"
+                  required
+                />
+              </div>
+              <div className="flex flex-col space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-charcoal/70">Description</label>
+                <textarea
+                  value={timelineForm.description}
+                  onChange={e => setTimelineForm(prev => ({ ...prev, description: e.target.value }))}
+                  rows="3"
+                  className="w-full px-3 py-2 border border-border-subtle rounded-lg text-xs focus:outline-none focus:border-primary resize-none bg-canvas"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">
+                <button type="button" onClick={() => setIsTimelineModalOpen(false)} className="px-4 py-2 border border-border-subtle rounded-lg text-xs font-bold hover:bg-gray-50">{t.cancel}</button>
+                <button type="submit" className="bg-primary text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-primary-dark">{lang === "ta" ? "சேமி" : "Save"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

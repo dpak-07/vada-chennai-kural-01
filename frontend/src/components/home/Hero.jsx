@@ -1,161 +1,147 @@
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { BookOpen, Archive, ArrowRight } from "lucide-react";
 import Button from "../common/Button";
-import { BookOpen, Archive } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { staggerContainer, staggerItem } from "@/lib/motion";
-
-// Split text into grapheme clusters so script combining marks (Tamil vowel
-// signs / virama, e.g. ச+ெ, க+ு) stay attached to their base letter.
-function splitGraphemes(text) {
-  if (typeof Intl !== "undefined" && Intl.Segmenter) {
-    const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
-    return Array.from(segmenter.segment(text), (s) => s.segment);
-  }
-  return Array.from(text);
-}
-
-// Background watermark: letters smoothly appear one by one from the start of
-// the word, playing once when the hero loads (no loop).
-function LetterGlow({ text }) {
-  const d = 0.14; // seconds between consecutive letters appearing
-  const f = 0.6; // seconds for a single letter to fade in
-
-  const letters = splitGraphemes(text);
-
-  return (
-    <span className="inline-block">
-      {letters.map((ch, i) => (
-        <motion.span
-          key={i}
-          className="inline-block"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: i * d, duration: f, ease: "easeInOut" }}
-        >
-          {ch === " " ? "\u00A0" : ch}
-        </motion.span>
-      ))}
-    </span>
-  );
-}
 
 export default function Hero({ latestIssueId }) {
   const { lang } = useLanguage();
 
   const t = {
     ta: {
-      tag: "சிறப்புக் கட்டுரை",
-      title: "கானா இசை மரபு: வடசென்னையின் ஆன்மாவைத் தேடி ஒரு பயணம்",
-      italic: "“ராயபுரத்தின் கானா பாடகர்கள் மற்றும் பாரம்பரிய இசை வடிவங்கள் பற்றிய விரிவான ஆவணப் பகிர்வு”",
-      desc: "எமது புதிய இதழில் வடசென்னையின் ஆதி இசை மரபான கானாவின் வரலாறு, அதன் தற்காலத் தாக்கம் மற்றும் மண்ணின் மைந்தர்களான கலைஞர்களின் அரிய நேர்காணல்கள் பிரசுரிக்கப்பட்டுள்ளன.",
-      readBtn: "புதிய இதழை வாசிக்க",
-      archiveBtn: "இதழ்கள் காப்பகம்"
+      brandTitle: "வடசென்னை குரல்",
+      brandSub: "மண்ணின் மக்களின் புதிய ஒலி!",
+      desc: "வடசென்னையின் பெருமைமிகு வரலாற்றையும், கானா இசை மரபு, பாரம்பரிய குத்துச்சண்டை மற்றும் உழைக்கும் மக்களின் நெகிழ்வான வாழ்வியலையும் உலகிற்கு கம்பீரமாகப் பறைசாற்றும் பிரீமியம் டிஜிட்டல் இதழ்.",
+      readBtn: "இதழை வாசிக்க",
+      archiveBtn: "இதழ்கள் காப்பகம்",
+      coverTitle: "அறிமுக இதழ் - 2026",
+      exploreNow: "இதழைத் திறக்க"
     },
     en: {
-      tag: "FEATURED COVER STORY",
-      title: "Gana Music Heritage: A Journey to Find the Soul of North Chennai",
-      italic: "\"An in-depth documentary sharing of Royapuram's Gana singers and traditional music forms\"",
-      desc: "In our latest issue, we explore the origins of Gana music, its contemporary impact, and include exclusive interviews with veteran local artists.",
-      readBtn: "Read Featured Issue",
-      archiveBtn: "Explore Archive"
+      brandTitle: "Vadachennai Kural",
+      brandSub: "The Sovereign Voice of Our People!",
+      desc: "An authentic editorial journey bringing the rich heritage of North Chennai to the global stage — archiving Gana musical roots, boxing traditions, and working-class resilience.",
+      readBtn: "Read Latest Issue",
+      archiveBtn: "Explore Archive",
+      coverTitle: "Launch Issue - 2026",
+      exploreNow: "Read Issue"
     }
   }[lang];
 
   return (
-    <section className="relative bg-charcoal min-h-[60vh] flex items-center justify-center py-16 px-4 overflow-hidden border-b border-border-subtle">
-      {/* Elegant vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#232323_0%,_#1B1B1B_55%,_#141414_100%)] z-0" />
-      {/* Animated brand watermark: letters light up one by one into the full
-          word, then go dark one by one, looping forever. */}
-      <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none z-0">
-        <div
-          className="text-center font-serif font-black uppercase leading-none text-secondary opacity-[0.07]"
-          style={{
-            fontSize: lang === "ta" ? "clamp(3.5rem, 13vw, 11rem)" : "clamp(2.6rem, 8.5vw, 7.5rem)",
-            letterSpacing: lang === "ta" ? "0.14em" : "0.18em",
-          }}
-        >
-          {lang === "ta" ? (
-            <LetterGlow text="வடசென்னை குரல்" />
-          ) : (
-            <>
-              <div className="block">
-                <LetterGlow text="Vadachennai" />
-              </div>
-              <div className="block tracking-[0.42em]">
-                <LetterGlow text="Kural" />
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+    <section className="relative bg-[#08080A] text-white min-h-[75vh] flex items-center justify-center py-16 sm:py-20 px-4 overflow-hidden border-b-2 border-[#800020]/30">
+      {/* 1. Cinematic Ambient Maroon & Obsidian Lighting */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_35%,_rgba(128,0,32,0.38)_0%,_rgba(20,4,8,0.7)_50%,_#08080A_100%)] z-0" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#800020]/20 rounded-full blur-3xl pointer-events-none z-0" />
+      <div className="absolute bottom-10 left-10 w-80 h-80 bg-[#B31336]/15 rounded-full blur-3xl pointer-events-none z-0" />
 
+      {/* 2. Hero Content Grid */}
       <motion.div
         initial="hidden"
         animate="visible"
-        variants={staggerContainer(0.12, 0.1)}
-        className="relative w-full px-4 sm:px-8 lg:px-12 z-10"
+        variants={staggerContainer(0.12, 0.08)}
+        className="relative w-full max-w-7xl px-4 sm:px-8 lg:px-12 z-10 mx-auto"
       >
-        <div className="max-w-3xl space-y-6">
-          <div className="space-y-3">
-            {/* Lead Tag */}
-            <motion.span
-              variants={staggerItem({ y: 14, duration: 0.45 })}
-              className="bg-secondary/25 border border-secondary text-secondary font-sans font-bold text-[10px] tracking-widest uppercase px-3 py-1 rounded inline-block"
-            >
-              {t.tag}
-            </motion.span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          
+          {/* Left Column: Clean, Authoritative & Prestigious Typography */}
+          <div className="lg:col-span-7 text-left space-y-6">
             
-            {/* Article Headline */}
-            <motion.h2
-              variants={staggerItem({ y: 40, duration: 0.6 })}
-              className="font-serif text-3xl sm:text-4xl md:text-5xl font-black text-white leading-normal tracking-tight py-1.5"
-            >
-              {t.title}
-            </motion.h2>
+            {/* Grand Artistic "Vadachennai Kural" Main Heading */}
+            <motion.div variants={staggerItem({ y: 24, duration: 0.6 })} className="space-y-3">
+              <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.06]">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-100 to-[#F5E6C8]">
+                  {t.brandTitle}
+                </span>
+              </h1>
+              <p className="font-serif text-xl sm:text-2xl lg:text-3xl text-[#D4AF37] font-bold tracking-wide">
+                {t.brandSub}
+              </p>
+            </motion.div>
+
+            {/* Editorial Description */}
             <motion.p
-              variants={staggerItem({ y: 26, duration: 0.55 })}
-              className="font-serif italic text-secondary-hover text-base sm:text-lg"
+              variants={staggerItem({ y: 18, duration: 0.5 })}
+              className="text-sm sm:text-base text-gray-300 font-sans font-normal leading-relaxed max-w-xl"
             >
-              {t.italic}
+              {t.desc}
             </motion.p>
+
+            {/* High-Fashion Action Buttons */}
+            <motion.div
+              variants={staggerItem({ y: 18, duration: 0.5 })}
+              className="flex flex-col sm:flex-row gap-4 pt-3"
+            >
+              <Button
+                href={`/issues/${latestIssueId}`}
+                variant="primary"
+                size="md"
+                className="bg-gradient-to-r from-[#800020] to-[#9B1130] hover:from-[#9B1130] hover:to-[#B31336] text-white font-bold border border-[#B31336]/60 shadow-glow-maroon flex items-center justify-center gap-2.5 px-8 py-4 cursor-pointer rounded-xl transition-all transform hover:-translate-y-0.5 text-sm"
+              >
+                <BookOpen className="w-4 h-4 text-[#D4AF37]" /> {t.readBtn}
+              </Button>
+              <Button
+                href="/issues"
+                variant="outline"
+                size="md"
+                className="bg-white hover:bg-gray-100 text-[#121216] font-bold border border-white shadow-md flex items-center justify-center gap-2.5 px-8 py-4 cursor-pointer rounded-xl transition-all transform hover:-translate-y-0.5 text-sm"
+              >
+                <Archive className="w-4 h-4 text-[#800020]" /> {t.archiveBtn}
+              </Button>
+            </motion.div>
           </div>
 
-          <motion.p
-            variants={staggerItem({ y: 22, duration: 0.55 })}
-            className="text-xs sm:text-sm text-gray-300 font-sans font-light leading-relaxed max-w-2xl"
-          >
-            {t.desc}
-          </motion.p>
-
-          {/* Action Buttons */}
+          {/* Right Column: 3D Luxury Magazine Showcase */}
           <motion.div
-            variants={staggerItem({ y: 18, duration: 0.5 })}
-            className="flex flex-col sm:flex-row gap-4 pt-2"
+            variants={staggerItem({ y: 30, duration: 0.65 })}
+            className="lg:col-span-5 flex justify-center lg:justify-end"
           >
-            <Button
-              href={`/issues/${latestIssueId}`}
-              variant="primary"
-              size="md"
-              className="flex items-center justify-center gap-2 cursor-pointer shadow-lg"
-            >
-              <BookOpen className="w-4 h-4" /> {t.readBtn}
-            </Button>
-            <Button
-              href="/issues"
-              variant="outline"
-              size="md"
-              className="!bg-white !text-charcoal !border-white hover:!bg-secondary hover:!text-charcoal flex items-center justify-center gap-2 cursor-pointer shadow-lg"
-            >
-              <Archive className="w-4 h-4" /> {t.archiveBtn}
-            </Button>
+            <div className="relative group max-w-xs sm:max-w-sm w-full">
+              
+              {/* Backlight Aura */}
+              <div className="absolute -inset-2 bg-gradient-to-tr from-[#800020] via-[#D4AF37]/30 to-[#800020] rounded-3xl blur-xl opacity-50 group-hover:opacity-80 transition duration-700 pointer-events-none" />
+
+              {/* 3D Magazine Cover Card */}
+              <div className="relative bg-[#14141A] border-2 border-[#800020]/50 rounded-3xl p-4 sm:p-5 shadow-2xl transition-all duration-500 transform group-hover:scale-[1.02] group-hover:-translate-y-1">
+                
+                {/* Magazine Cover Image */}
+                <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
+                  <Image
+                    src="/coming_soon_cover.jpg"
+                    alt="Vadachennai Kural Cover"
+                    fill
+                    sizes="(max-width: 768px) 300px, 400px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    priority
+                  />
+
+                  {/* High-Gloss Sheen Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-transparent to-white/15 pointer-events-none" />
+
+                  {/* Hover Quick Read Bar */}
+                  <Link
+                    href={`/issues/${latestIssueId}`}
+                    className="absolute inset-x-3 bottom-3 bg-black/85 hover:bg-[#800020] backdrop-blur-md border border-white/20 text-white py-2.5 px-4 rounded-xl flex items-center justify-between text-xs font-bold font-sans transition-all duration-300 cursor-pointer shadow-lg"
+                  >
+                    <span>{t.exploreNow}</span>
+                    <ArrowRight className="w-4 h-4 text-[#D4AF37]" />
+                  </Link>
+                </div>
+              </div>
+            </div>
           </motion.div>
+
         </div>
       </motion.div>
 
-      {/* Ribbon Divider */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary" />
+      {/* Triple Layer Regal Maroon & White Hairline Divider */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <div className="h-[2px] bg-gradient-to-r from-transparent via-[#800020] to-transparent" />
+        <div className="h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+      </div>
     </section>
   );
 }

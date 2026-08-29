@@ -112,16 +112,16 @@ export default function AboutClient({ data }) {
             initial="hidden"
             animate="visible"
             variants={cardVariants}
-            className="bg-white p-8 rounded-xl border border-border-subtle shadow-sm hover:shadow-md transition-shadow flex items-start gap-4"
+            className="bg-white p-8 rounded-2xl border-2 border-gray-100 shadow-md hover:shadow-xl hover:border-[#800020]/40 transition-all flex items-start gap-4"
           >
-            <div className="p-3 bg-primary/10 rounded-lg text-primary shrink-0">
+            <div className="p-3.5 bg-[#800020]/10 rounded-xl text-[#800020] shrink-0 border border-[#800020]/20">
               <Award className="w-6 h-6" />
             </div>
-            <div className="space-y-2">
-              <h4 className="font-serif text-base font-bold text-charcoal">
+            <div className="space-y-2 text-left">
+              <h4 className="font-serif text-base font-bold text-[#121216]">
                 {t.missionTitle}
               </h4>
-              <p className="font-sans text-xs sm:text-sm text-charcoal/70 leading-relaxed font-light">
+              <p className="font-sans text-xs sm:text-sm text-charcoal/70 leading-relaxed font-normal">
                 {t.missionDesc}
               </p>
             </div>
@@ -132,16 +132,16 @@ export default function AboutClient({ data }) {
             initial="hidden"
             animate="visible"
             variants={cardVariants}
-            className="bg-white p-8 rounded-xl border border-border-subtle shadow-sm hover:shadow-md transition-shadow flex items-start gap-4"
+            className="bg-white p-8 rounded-2xl border-2 border-gray-100 shadow-md hover:shadow-xl hover:border-[#800020]/40 transition-all flex items-start gap-4"
           >
-            <div className="p-3 bg-secondary/10 rounded-lg text-secondary shrink-0">
+            <div className="p-3.5 bg-secondary/15 rounded-xl text-secondary-hover shrink-0 border border-secondary/30">
               <Compass className="w-6 h-6" />
             </div>
-            <div className="space-y-2">
-              <h4 className="font-serif text-base font-bold text-charcoal">
+            <div className="space-y-2 text-left">
+              <h4 className="font-serif text-base font-bold text-[#121216]">
                 {t.visionTitle}
               </h4>
-              <p className="font-sans text-xs sm:text-sm text-charcoal/70 leading-relaxed font-light">
+              <p className="font-sans text-xs sm:text-sm text-charcoal/70 leading-relaxed font-normal">
                 {t.visionDesc}
               </p>
             </div>
@@ -150,10 +150,10 @@ export default function AboutClient({ data }) {
       </div>
 
       {/* Timeline Section */}
-      <div className="border-t border-border-subtle pt-20">
+      <div className="border-t border-gray-200 pt-20">
         <SectionHeading title={t.milestones} subtitle={t.milestonesSub} centered />
 
-        <div className="relative border-l border-primary/30 max-w-3xl mx-auto pl-6 sm:pl-10 space-y-12">
+        <div className="relative border-l-2 border-[#800020]/40 max-w-3xl mx-auto pl-6 sm:pl-10 space-y-12">
           {t.timeline.map((item, index) => (
             <motion.div
               key={index}
@@ -164,18 +164,18 @@ export default function AboutClient({ data }) {
               className="relative"
             >
               {/* Timeline dot */}
-              <span className="absolute -left-[31px] sm:-left-[47px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white border-2 border-primary">
-                <span className="h-1.5 w-1.5 rounded-full bg-secondary" />
+              <span className="absolute -left-[31px] sm:-left-[47px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white border-2 border-[#800020] shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#800020]" />
               </span>
 
-              <div className="bg-white rounded-xl border border-border-subtle p-6 shadow-sm hover:shadow-md transition-shadow space-y-2">
-                <span className="font-serif text-sm font-bold text-secondary tracking-widest block">
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-6 sm:p-7 shadow-sm hover:shadow-lg hover:border-[#800020]/30 transition-all space-y-2 text-left">
+                <span className="font-serif text-sm font-bold text-[#800020] tracking-widest block uppercase">
                   {item.year}
                 </span>
-                <h4 className="font-serif text-lg font-bold text-charcoal">
+                <h4 className="font-serif text-lg font-bold text-[#121216]">
                   {item.title}
                 </h4>
-                <p className="font-sans text-xs sm:text-sm text-charcoal/65 leading-relaxed font-light">
+                <p className="font-sans text-xs sm:text-sm text-charcoal/70 leading-relaxed font-normal">
                   {item.description}
                 </p>
               </div>

@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
+import subscriberRoutes from './routes/subscriberRoutes.js';
+import issueRoutes from './routes/issueRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -21,6 +23,10 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Backend server is running' });
 });
+
+// API Routes
+app.use('/api/subscribers', subscriberRoutes);
+app.use('/api/issues', issueRoutes);
 
 // Start Server
 app.listen(PORT, () => {

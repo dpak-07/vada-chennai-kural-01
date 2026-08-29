@@ -57,7 +57,7 @@ export default function EditorialPreview() {
       </div>
 
       <div className="text-center pt-4">
-        <Button href="/editorial" variant="outline" className="group flex items-center justify-center gap-2 mx-auto cursor-pointer">
+        <Button href="/editorial" variant="outline" className="group flex items-center justify-center gap-2 mx-auto cursor-pointer border-2 border-[#800020] text-[#800020] hover:bg-[#800020] hover:text-white px-8 py-3.5 font-bold shadow-xs">
           {t.btnText}{" "}
           <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
         </Button>

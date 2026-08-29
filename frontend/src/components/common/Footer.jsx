@@ -46,59 +46,64 @@ export default function Footer() {
   }[lang];
 
   return (
-    <footer className="bg-charcoal text-white border-t border-primary/20 mt-auto">
-      <div className="w-full px-4 sm:px-8 lg:px-12 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+    <footer className="bg-[#08080A] text-white border-t-2 border-[#800020]/40 mt-auto relative overflow-hidden">
+      {/* Subtle bottom glow */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-32 bg-[#800020]/10 blur-3xl pointer-events-none" />
+
+      <div className="w-full px-4 sm:px-8 lg:px-12 py-16 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-left">
           {/* Brand & About */}
           <div className="md:col-span-1 space-y-4">
-            <Link href="/" className="flex items-center space-x-2 group">
-              <img
-                src="/logo/vadachennai%20kural%20logo.jpg"
-                alt="Vadachennai Kural Logo"
-                className="w-9 h-9 rounded-full object-cover shadow-sm transition-transform duration-300 group-hover:scale-105"
-              />
+            <Link href="/" className="flex items-center space-x-3 group">
+              <div className="p-0.5 rounded-full bg-gradient-to-tr from-[#800020] to-[#D4AF37]">
+                <img
+                  src="/logo/vadachennai%20kural%20logo.jpg"
+                  alt="Vadachennai Kural Logo"
+                  className="w-10 h-10 rounded-full object-cover shadow-sm bg-white"
+                />
+              </div>
               <div className="flex flex-col">
-                <span className="font-serif text-lg font-bold tracking-tight text-white">
+                <span className="font-serif text-xl font-black tracking-tight text-white group-hover:text-secondary transition-colors">
                   {t.brandTitle}
                 </span>
-                <span className="font-sans text-[8px] tracking-widest text-secondary font-bold uppercase -mt-1">
+                <span className="font-sans text-[8px] tracking-[0.2em] text-gray-400 font-bold uppercase -mt-0.5">
                   {t.brandTagline}
                 </span>
               </div>
             </Link>
-            <p className="text-gray-400 text-xs leading-relaxed font-light">
+            <p className="text-gray-400 text-xs leading-relaxed font-normal">
               {t.brandAbout}
             </p>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h4 className="font-serif text-md font-bold text-secondary uppercase tracking-wider">
+            <h4 className="font-serif text-sm font-bold text-secondary uppercase tracking-widest">
               {t.quickLinks}
             </h4>
-            <ul className="space-y-2.5 text-xs text-gray-400 font-medium">
+            <ul className="space-y-2.5 text-xs text-gray-300 font-medium">
               <li>
-                <Link href="/" className="hover:text-primary transition-colors duration-200">
+                <Link href="/" className="hover:text-secondary transition-colors duration-200">
                   {t.home}
                 </Link>
               </li>
               <li>
-                <Link href="/issues" className="hover:text-primary transition-colors duration-200">
+                <Link href="/issues" className="hover:text-secondary transition-colors duration-200">
                   {t.issues}
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-primary transition-colors duration-200">
+                <Link href="/about" className="hover:text-secondary transition-colors duration-200">
                   {t.about}
                 </Link>
               </li>
               <li>
-                <Link href="/editorial" className="hover:text-primary transition-colors duration-200">
+                <Link href="/editorial" className="hover:text-secondary transition-colors duration-200">
                   {t.editorial}
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-primary transition-colors duration-200">
+                <Link href="/contact" className="hover:text-secondary transition-colors duration-200">
                   {t.contact}
                 </Link>
               </li>
@@ -107,23 +112,23 @@ export default function Footer() {
 
           {/* Contact Details */}
           <div className="space-y-4">
-            <h4 className="font-serif text-md font-bold text-secondary uppercase tracking-wider">
+            <h4 className="font-serif text-sm font-bold text-secondary uppercase tracking-widest">
               {t.contactHeading}
             </h4>
-            <ul className="space-y-3.5 text-xs text-gray-400 font-light">
-              <li className="flex items-start space-x-3.5">
-                <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <ul className="space-y-3 text-xs text-gray-400 font-normal">
+              <li className="flex items-start space-x-3">
+                <MapPin className="w-4 h-4 text-[#800020] shrink-0 mt-0.5" />
                 <span>{lang === "en" ? contactData.officeAddressEn : contactData.officeAddress}</span>
               </li>
-              <li className="flex items-center space-x-3.5">
-                <Phone className="w-4 h-4 text-primary shrink-0" />
-                <a href={`tel:${contactData.phone}`} className="hover:text-primary transition-colors">
+              <li className="flex items-center space-x-3">
+                <Phone className="w-4 h-4 text-[#800020] shrink-0" />
+                <a href={`tel:${contactData.phone}`} className="hover:text-white transition-colors">
                   {contactData.phone}
                 </a>
               </li>
-              <li className="flex items-center space-x-3.5">
-                <Mail className="w-4 h-4 text-primary shrink-0" />
-                <a href={`mailto:${contactData.email}`} className="hover:text-primary transition-colors">
+              <li className="flex items-center space-x-3">
+                <Mail className="w-4 h-4 text-[#800020] shrink-0" />
+                <a href={`mailto:${contactData.email}`} className="hover:text-white transition-colors">
                   {contactData.email}
                 </a>
               </li>
@@ -132,18 +137,18 @@ export default function Footer() {
 
           {/* Social Links */}
           <div className="space-y-4">
-            <h4 className="font-serif text-md font-bold text-secondary uppercase tracking-wider">
+            <h4 className="font-serif text-sm font-bold text-secondary uppercase tracking-widest">
               {t.socialHeading}
             </h4>
-            <p className="text-gray-400 text-xs font-light leading-relaxed">
+            <p className="text-gray-400 text-xs font-normal leading-relaxed">
               {t.socialText}
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-3 pt-1">
               <a
                 href={contactData.socialLinks.facebook}
                 target="_blank"
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-gray-800 hover:bg-primary flex items-center justify-center transition-all duration-300 text-white hover:scale-105"
+                className="w-9 h-9 rounded-full bg-[#181822] hover:bg-[#800020] flex items-center justify-center transition-all duration-300 text-gray-300 hover:text-white hover:scale-105 border border-white/5 shadow-sm"
                 aria-label="Facebook"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -154,7 +159,7 @@ export default function Footer() {
                 href={contactData.socialLinks.twitter}
                 target="_blank"
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-gray-800 hover:bg-primary flex items-center justify-center transition-all duration-300 text-white hover:scale-105"
+                className="w-9 h-9 rounded-full bg-[#181822] hover:bg-[#800020] flex items-center justify-center transition-all duration-300 text-gray-300 hover:text-white hover:scale-105 border border-white/5 shadow-sm"
                 aria-label="Twitter"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -165,7 +170,7 @@ export default function Footer() {
                 href={contactData.socialLinks.instagram}
                 target="_blank"
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-gray-800 hover:bg-primary flex items-center justify-center transition-all duration-300 text-white hover:scale-105"
+                className="w-9 h-9 rounded-full bg-[#181822] hover:bg-[#800020] flex items-center justify-center transition-all duration-300 text-gray-300 hover:text-white hover:scale-105 border border-white/5 shadow-sm"
                 aria-label="Instagram"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
@@ -178,7 +183,7 @@ export default function Footer() {
                 href={contactData.socialLinks.youtube}
                 target="_blank"
                 rel="noreferrer"
-                className="w-8 h-8 rounded-full bg-gray-800 hover:bg-primary flex items-center justify-center transition-all duration-300 text-white hover:scale-105"
+                className="w-9 h-9 rounded-full bg-[#181822] hover:bg-[#800020] flex items-center justify-center transition-all duration-300 text-gray-300 hover:text-white hover:scale-105 border border-white/5 shadow-sm"
                 aria-label="YouTube"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -190,13 +195,13 @@ export default function Footer() {
         </div>
 
         {/* Footer bottom */}
-        <div className="mt-12 pt-8 border-t border-gray-800 text-center flex flex-col md:flex-row items-center justify-between text-xs text-gray-500 font-light">
+        <div className="mt-12 pt-8 border-t border-white/10 text-center flex flex-col md:flex-row items-center justify-between text-xs text-gray-400 font-light">
           <p>{t.copyright}</p>
           <div className="flex space-x-6 mt-4 md:mt-0 font-medium">
-            <Link href="/about" className="hover:text-primary transition-colors">
+            <Link href="/about" className="hover:text-secondary transition-colors">
               {t.terms}
             </Link>
-            <Link href="/about" className="hover:text-primary transition-colors">
+            <Link href="/about" className="hover:text-secondary transition-colors">
               {t.privacy}
             </Link>
           </div>

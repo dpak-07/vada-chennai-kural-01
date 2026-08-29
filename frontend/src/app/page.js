@@ -52,14 +52,14 @@ export default function Home() {
 
   return (
     <>
-      {/* Newspaper Scrolling Ticker (Viduthalai style) */}
-      <div className="bg-amber-400 text-charcoal py-2 border-b border-primary/20 overflow-hidden font-sans font-bold text-xs uppercase tracking-wider select-none">
+      {/* Newspaper Scrolling Ticker in Velvet Maroon & Gold */}
+      <div className="bg-[#4A020E] text-white py-2 border-b border-[#800020]/50 overflow-hidden font-sans font-bold text-xs uppercase tracking-wider select-none shadow-inner">
         <div className="w-full px-4 sm:px-8 lg:px-12 flex items-center">
-          <span className="bg-primary text-white text-[9px] font-sans font-black px-2.5 py-1 rounded mr-3 shrink-0 uppercase tracking-widest">
+          <span className="bg-[#800020] text-white border border-[#D4AF37]/40 text-[9.5px] font-sans font-black px-3 py-1 rounded mr-3 shrink-0 uppercase tracking-widest shadow-xs">
             {lang === "ta" ? "முக்கிய செய்திகள்" : "Breaking News"}
           </span>
           <div className="relative flex-1 overflow-hidden" aria-hidden="true">
-            <div className="animate-marquee">
+            <div className="animate-marquee text-gray-200">
               <span className="pr-12">{tickerItems}</span>
               <span className="pr-12">{tickerItems}</span>
             </div>
@@ -72,22 +72,22 @@ export default function Home() {
         <Hero latestIssueId={latestIssues[0]?.id} />
 
         {/* Thought of the Day Ribbon */}
-        <section className="bg-secondary/10 py-4 border-b border-secondary/20">
+        <section className="bg-gradient-to-r from-[#121216] via-[#24040A] to-[#121216] py-4.5 border-b-2 border-[#800020]/30 shadow-md">
           <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4">
-            <span className="bg-primary text-white text-[10px] font-sans font-bold px-3 py-1.5 rounded uppercase tracking-wider shrink-0">
+            <span className="bg-[#800020] text-white border border-[#B31336]/40 text-[10px] font-sans font-bold px-3 py-1.5 rounded uppercase tracking-wider shrink-0 shadow-xs">
               {t.thoughtTag}
             </span>
-            <p className="font-serif italic text-charcoal text-xs sm:text-sm font-semibold text-center md:text-left flex-1 md:px-6">
+            <p className="font-serif italic text-white text-xs sm:text-sm font-semibold text-center md:text-left flex-1 md:px-6">
               {t.thoughtQuote}
             </p>
-            <span className="text-[10px] font-sans text-charcoal/40 font-bold shrink-0 hidden md:inline">
+            <span className="text-[10px] font-sans text-secondary font-bold shrink-0 hidden md:inline tracking-wider uppercase">
               {t.thoughtBrand}
             </span>
           </div>
         </section>
 
         {/* Latest Issue Spotlight */}
-        <section className="py-20 bg-canvas">
+        <section className="py-20 bg-[#F8F9FA] relative">
           <div className="w-full px-4 sm:px-8 lg:px-12">
             <SectionHeading
               title={t.latestHeading}
@@ -98,7 +98,7 @@ export default function Home() {
         </section>
 
         {/* Recent Issues Archive Grid */}
-        <section className="py-20 bg-white border-y border-border-subtle">
+        <section className="py-20 bg-white border-y border-gray-200">
           <div className="w-full px-4 sm:px-8 lg:px-12">
             <SectionHeading
               title={t.recentHeading}
@@ -109,7 +109,7 @@ export default function Home() {
         </section>
 
         {/* About Preview Section */}
-        <section className="py-20 bg-canvas">
+        <section className="py-20 bg-[#F8F9FA]">
           <div className="w-full px-4 sm:px-8 lg:px-12">
             <SectionHeading
               title={t.aboutHeading}
@@ -120,7 +120,7 @@ export default function Home() {
         </section>
 
         {/* Editorial Board Showcase */}
-        <section className="py-20 bg-white border-t border-border-subtle">
+        <section className="py-20 bg-white border-t border-gray-200">
           <div className="w-full px-4 sm:px-8 lg:px-12">
             <SectionHeading
               title={t.editorialHeading}
@@ -134,7 +134,7 @@ export default function Home() {
         <VideoGallery />
 
         {/* Newsletter Section */}
-        <section className="py-20 bg-canvas">
+        <section className="py-20 bg-[#F8F9FA]">
           <div className="w-full px-4 sm:px-8 lg:px-12">
             <Newsletter />
           </div>
